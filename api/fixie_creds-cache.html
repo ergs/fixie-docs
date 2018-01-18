@@ -1,0 +1,412 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Credentials Cache (fixie_creds.cache) &#8212; fixie  documentation</title>
+    <link rel="stylesheet" href="../_static/numpy_friendly.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Noticia+Text|Open+Sans|Droid+Sans+Mono" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/jquery.cookie.js"></script>
+    <script type="text/javascript" src="../_static/cloud.base.js"></script>
+    <script type="text/javascript" src="../_static/cloud.js"></script>
+    <link rel="shortcut icon" href="../_static/fixie-logo.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Credentials Environment (fixie_creds.environ)" href="fixie_creds-environ.html" />
+    <link rel="prev" title="JSON Utilities (fixie.jsonutils)" href="fixie-jsonutils.html" />
+     
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="canonical" href="http://xon.sh/api/fixie_creds-cache.html"/>
+
+  </head>
+  <body>
+    <div class="relbar-top">
+        
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> &nbsp; &nbsp;</li>
+        <li class="right" >
+          <a href="fixie_creds-environ.html" title="Credentials Environment (fixie_creds.environ)"
+             accesskey="N">next</a> &nbsp; &nbsp;</li>
+        <li class="right" >
+          <a href="fixie-jsonutils.html" title="JSON Utilities (fixie.jsonutils)"
+             accesskey="P">previous</a> &nbsp; &nbsp;</li>
+    <li><a href="../index.html">fixie  documentation</a> &#187;</li>
+
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">Fixie API</a> &#187;</li> 
+      </ul>
+    </div>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-fixie_creds.cache">
+<span id="credentials-cache-fixie-creds-cache"></span><span id="fixie-creds-cache"></span><h1>Credentials Cache (<code class="docutils literal"><span class="pre">fixie_creds.cache</span></code>)<a class="headerlink" href="#module-fixie_creds.cache" title="Permalink to this headline">¶</a></h1>
+<p>Represents a credentials cache that is backed by the file system. This cache
+is the underlying registration and verification engine for credentials.</p>
+<p>Importantly, while the credtials may generate a token for a user, that token is
+NEVER stored. Instead, the hash of the token is stored.  Verification compares
+the hash of token provided by the user to the stored hashed token.</p>
+<dl class="class">
+<dt id="fixie_creds.cache.Cache">
+<em class="property">class </em><code class="descclassname">fixie_creds.cache.</code><code class="descname">Cache</code><span class="sig-paren">(</span><em>credsdir=None</em>, <em>seed=None</em>, <em>nbytes=20</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fixie_creds/cache.html#Cache"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fixie_creds.cache.Cache" title="Permalink to this definition">¶</a></dt>
+<dd><p>A cache for fixie credentials.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>credsdir</strong> : str or None, optional</p>
+<blockquote>
+<div><p>Path to credentials directory, if None, defaults to $FIXIE_CREDS_DIR.</p>
+</div></blockquote>
+<p><strong>seed</strong> : int, bytes, or None, optional</p>
+<blockquote>
+<div><p>Value to seed to Pythons RNG. This is provided for testing purpose,
+For production, this should be set to None so that reseeding is
+done based on system time and other parameters.</p>
+</div></blockquote>
+<p><strong>nbytes</strong> : int, optional</p>
+<blockquote class="last">
+<div><p>Number of bits to use when generating for tokens.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="fixie_creds.cache.Cache.deregister">
+<code class="descname">deregister</code><span class="sig-paren">(</span><em>user</em>, <em>token</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fixie_creds/cache.html#Cache.deregister"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fixie_creds.cache.Cache.deregister" title="Permalink to this definition">¶</a></dt>
+<dd><p>Deregisters a user.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>user</strong> : str</p>
+<blockquote>
+<div><p>Name of the user to deregister.</p>
+</div></blockquote>
+<p><strong>token</strong> : str</p>
+<blockquote>
+<div><p>The user’s token</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>message</strong> : str</p>
+<blockquote>
+<div><p>Message for status of deregistration</p>
+</div></blockquote>
+<p><strong>flag</strong> : bool</p>
+<blockquote class="last">
+<div><p>Whether or not the deregistration was successful.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="fixie_creds.cache.Cache.get_user">
+<code class="descname">get_user</code><span class="sig-paren">(</span><em>user</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fixie_creds/cache.html#Cache.get_user"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fixie_creds.cache.Cache.get_user" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the user, loading it from the file system if needed.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fixie_creds.cache.Cache.hash_token">
+<code class="descname">hash_token</code><span class="sig-paren">(</span><em>token</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fixie_creds/cache.html#Cache.hash_token"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fixie_creds.cache.Cache.hash_token" title="Permalink to this definition">¶</a></dt>
+<dd><p>Hashes a token.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fixie_creds.cache.Cache.load_user">
+<code class="descname">load_user</code><span class="sig-paren">(</span><em>user</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fixie_creds/cache.html#Cache.load_user"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fixie_creds.cache.Cache.load_user" title="Permalink to this definition">¶</a></dt>
+<dd><p>Loads a user into the cache from the filesystem.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fixie_creds.cache.Cache.register">
+<code class="descname">register</code><span class="sig-paren">(</span><em>user</em>, <em>email</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fixie_creds/cache.html#Cache.register"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fixie_creds.cache.Cache.register" title="Permalink to this definition">¶</a></dt>
+<dd><p>Registers a new user and provides their token.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>user</strong> : str</p>
+<blockquote>
+<div><p>Name of the user to register.</p>
+</div></blockquote>
+<p><strong>email</strong> : str</p>
+<blockquote>
+<div><p>Email address for the user.</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>token or message</strong> : str</p>
+<blockquote>
+<div><p>The token if the registration was successful, and an error message
+if it wasn’t.</p>
+</div></blockquote>
+<p><strong>flag</strong> : bool</p>
+<blockquote class="last">
+<div><p>Whether or not the registration was successful.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="fixie_creds.cache.Cache.remove_user">
+<code class="descname">remove_user</code><span class="sig-paren">(</span><em>user</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fixie_creds/cache.html#Cache.remove_user"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fixie_creds.cache.Cache.remove_user" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove the user from the cache and the file system.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fixie_creds.cache.Cache.reset">
+<code class="descname">reset</code><span class="sig-paren">(</span><em>user</em>, <em>email</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fixie_creds/cache.html#Cache.reset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fixie_creds.cache.Cache.reset" title="Permalink to this definition">¶</a></dt>
+<dd><p>Resets a user’s token on the system. The email address here must match
+the one originally provided.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>user</strong> : str</p>
+<blockquote>
+<div><p>Name of the user to register.</p>
+</div></blockquote>
+<p><strong>email</strong> : str</p>
+<blockquote>
+<div><p>Email address for the user.</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>token or message</strong> : str</p>
+<blockquote>
+<div><p>The token if the registration was successful, and an error message
+if it wasn’t.</p>
+</div></blockquote>
+<p><strong>flag</strong> : bool</p>
+<blockquote class="last">
+<div><p>Whether or not the registration was successful.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="fixie_creds.cache.Cache.user_cred_file">
+<code class="descname">user_cred_file</code><span class="sig-paren">(</span><em>user</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fixie_creds/cache.html#Cache.user_cred_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fixie_creds.cache.Cache.user_cred_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the credential filename for a user.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fixie_creds.cache.Cache.user_exists">
+<code class="descname">user_exists</code><span class="sig-paren">(</span><em>user</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fixie_creds/cache.html#Cache.user_exists"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fixie_creds.cache.Cache.user_exists" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns whether or not a user exists (ie has been registered).</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fixie_creds.cache.Cache.verify">
+<code class="descname">verify</code><span class="sig-paren">(</span><em>user</em>, <em>token</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fixie_creds/cache.html#Cache.verify"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fixie_creds.cache.Cache.verify" title="Permalink to this definition">¶</a></dt>
+<dd><p>Verifies whether or not the user-token pair match.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>user</strong> : str</p>
+<blockquote>
+<div><p>Name of the user.</p>
+</div></blockquote>
+<p><strong>token</strong> : str</p>
+<blockquote>
+<div><p>The token to verify for the user.</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>verified</strong> : bool</p>
+<blockquote>
+<div><p>Whether or not the user-token pair is valid.</p>
+</div></blockquote>
+<p><strong>message</strong> : str</p>
+<blockquote>
+<div><p>A message string, if needed.</p>
+</div></blockquote>
+<p><strong>flag</strong> : bool</p>
+<blockquote class="last">
+<div><p>Whether or not the verification itself could be completed successfully.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="fixie_creds.cache.Cache.write_user">
+<code class="descname">write_user</code><span class="sig-paren">(</span><em>user</em>, <em>email</em>, <em>hashed_token</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fixie_creds/cache.html#Cache.write_user"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fixie_creds.cache.Cache.write_user" title="Permalink to this definition">¶</a></dt>
+<dd><p>Writes a user’s credential file.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fixie_creds.cache.Cache.credsdir">
+<code class="descname">credsdir</code><a class="headerlink" href="#fixie_creds.cache.Cache.credsdir" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="fixie_creds.cache.User">
+<em class="property">class </em><code class="descclassname">fixie_creds.cache.</code><code class="descname">User</code><span class="sig-paren">(</span><em>user</em>, <em>email</em>, <em>hashed_token</em><span class="sig-paren">)</span><a class="headerlink" href="#fixie_creds.cache.User" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create new instance of User(user, email, hashed_token)</p>
+<dl class="method">
+<dt id="fixie_creds.cache.User.count">
+<code class="descname">count</code><span class="sig-paren">(</span><em>value</em><span class="sig-paren">)</span> &#x2192; integer -- return number of occurrences of value<a class="headerlink" href="#fixie_creds.cache.User.count" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="fixie_creds.cache.User.index">
+<code class="descname">index</code><span class="sig-paren">(</span><em>value</em><span class="optional">[</span>, <em>start</em><span class="optional">[</span>, <em>stop</em><span class="optional">]</span><span class="optional">]</span><span class="sig-paren">)</span> &#x2192; integer -- return first index of value.<a class="headerlink" href="#fixie_creds.cache.User.index" title="Permalink to this definition">¶</a></dt>
+<dd><p>Raises ValueError if the value is not present.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fixie_creds.cache.User.email">
+<code class="descname">email</code><a class="headerlink" href="#fixie_creds.cache.User.email" title="Permalink to this definition">¶</a></dt>
+<dd><p>Alias for field number 1</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fixie_creds.cache.User.hashed_token">
+<code class="descname">hashed_token</code><a class="headerlink" href="#fixie_creds.cache.User.hashed_token" title="Permalink to this definition">¶</a></dt>
+<dd><p>Alias for field number 2</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fixie_creds.cache.User.user">
+<code class="descname">user</code><a class="headerlink" href="#fixie_creds.cache.User.user" title="Permalink to this definition">¶</a></dt>
+<dd><p>Alias for field number 0</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+        <p class="logo"><a href="../index.html" title="index">
+          <img class="logo" src="../_static/fixie-logo.png" alt="Logo"/>
+        </a></p>
+  <div class="sphinxprev">
+    <h4>Previous page</h4>
+    <p class="topless"><a href="fixie-jsonutils.html"
+                          title="Previous page">&larr; JSON Utilities (<code class="docutils literal"><span class="pre">fixie.jsonutils</span></code>)</a></p>
+  </div>
+  <div class="sphinxnext">
+    <h4>Next page</h4>
+    <p class="topless"><a href="fixie_creds-environ.html"
+                          title="Next page">&rarr; Credentials Environment (<code class="docutils literal"><span class="pre">fixie_creds.environ</span></code>)</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/api/fixie_creds-cache.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+    
+    
+        <div class="sidebar-toggle-group no-js">
+            
+            <button class="sidebar-toggle" id="sidebar-hide" title="Hide the sidebar menu">
+                 «
+                <span class="show-for-small">hide menu</span>
+                
+            </button>
+            <button class="sidebar-toggle" id="sidebar-show" title="Show the sidebar menu">
+                
+                <span class="show-for-small">menu</span>
+                <span class="hide-for-small">sidebar</span>
+                 »
+            </button>
+        </div>
+    
+      <div class="clearer"></div>
+    </div>
+    <div class="relbar-bottom">
+        
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> &nbsp; &nbsp;</li>
+        <li class="right" >
+          <a href="fixie_creds-environ.html" title="Credentials Environment (fixie_creds.environ)"
+             >next</a> &nbsp; &nbsp;</li>
+        <li class="right" >
+          <a href="fixie-jsonutils.html" title="JSON Utilities (fixie.jsonutils)"
+             >previous</a> &nbsp; &nbsp;</li>
+    <li><a href="../index.html">fixie  documentation</a> &#187;</li>
+
+          <li class="nav-item nav-item-1"><a href="index.html" >Fixie API</a> &#187;</li> 
+      </ul>
+    </div>
+    </div>
+
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2018, Anthony Scopatz.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.6.
+    </div>
+    <!-- cloud_sptheme 1.4 -->
+  </body>
+</html>

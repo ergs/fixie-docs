@@ -1,0 +1,274 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Environment (fixie.environ) &#8212; fixie  documentation</title>
+    <link rel="stylesheet" href="../_static/numpy_friendly.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Noticia+Text|Open+Sans|Droid+Sans+Mono" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/jquery.cookie.js"></script>
+    <script type="text/javascript" src="../_static/cloud.base.js"></script>
+    <script type="text/javascript" src="../_static/cloud.js"></script>
+    <link rel="shortcut icon" href="../_static/fixie-logo.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Logger (fixie.logger)" href="fixie-logger.html" />
+    <link rel="prev" title="JSON Validating Request Handler (fixie.request_handler)" href="fixie-request_handler.html" />
+     
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="canonical" href="http://xon.sh/api/fixie-environ.html"/>
+
+  </head>
+  <body>
+    <div class="relbar-top">
+        
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> &nbsp; &nbsp;</li>
+        <li class="right" >
+          <a href="fixie-logger.html" title="Logger (fixie.logger)"
+             accesskey="N">next</a> &nbsp; &nbsp;</li>
+        <li class="right" >
+          <a href="fixie-request_handler.html" title="JSON Validating Request Handler (fixie.request_handler)"
+             accesskey="P">previous</a> &nbsp; &nbsp;</li>
+    <li><a href="../index.html">fixie  documentation</a> &#187;</li>
+
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">Fixie API</a> &#187;</li> 
+      </ul>
+    </div>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-fixie.environ">
+<span id="environment-fixie-environ"></span><span id="fixie-environ"></span><h1>Environment (<code class="docutils literal"><span class="pre">fixie.environ</span></code>)<a class="headerlink" href="#module-fixie.environ" title="Permalink to this headline">¶</a></h1>
+<p>Custom environment handling tools for fixie.</p>
+<dl class="function">
+<dt id="fixie.environ.context">
+<code class="descclassname">fixie.environ.</code><code class="descname">context</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fixie/environ.html#context"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fixie.environ.context" title="Permalink to this definition">¶</a></dt>
+<dd><p>A context manager for entering and leaving the fixie environment
+safely. This context manager is reentrant and will only be executed
+if it hasn’t already been entered.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="fixie.environ.csv_to_list">
+<code class="descclassname">fixie.environ.</code><code class="descname">csv_to_list</code><span class="sig-paren">(</span><em>x</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fixie/environ.html#csv_to_list"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fixie.environ.csv_to_list" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts a comma separated string to a list of strings.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="fixie.environ.expand_and_make_dir">
+<code class="descclassname">fixie.environ.</code><code class="descname">expand_and_make_dir</code><span class="sig-paren">(</span><em>x</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fixie/environ.html#expand_and_make_dir"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fixie.environ.expand_and_make_dir" title="Permalink to this definition">¶</a></dt>
+<dd><p>Expands a variable that represents a directory, and ensures that the
+directory actually exists.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="fixie.environ.expand_file_and_mkdirs">
+<code class="descclassname">fixie.environ.</code><code class="descname">expand_file_and_mkdirs</code><span class="sig-paren">(</span><em>x</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fixie/environ.html#expand_file_and_mkdirs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fixie.environ.expand_file_and_mkdirs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Expands a variable that represents a file, and ensures that the
+directory it lives in actually exists.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="fixie.environ.fixie_config_dir">
+<code class="descclassname">fixie.environ.</code><code class="descname">fixie_config_dir</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fixie/environ.html#fixie_config_dir"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fixie.environ.fixie_config_dir" title="Permalink to this definition">¶</a></dt>
+<dd><p>Ensures and returns the $FIXIE_CONFIG_DIR</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="fixie.environ.fixie_data_dir">
+<code class="descclassname">fixie.environ.</code><code class="descname">fixie_data_dir</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fixie/environ.html#fixie_data_dir"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fixie.environ.fixie_data_dir" title="Permalink to this definition">¶</a></dt>
+<dd><p>Ensures and returns the $FIXIE_DATA_DIR</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="fixie.environ.fixie_detype_env">
+<code class="descclassname">fixie.environ.</code><code class="descname">fixie_detype_env</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fixie/environ.html#fixie_detype_env"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fixie.environ.fixie_detype_env" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a detyped version of the environment containing only the fixie
+environment variables.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="fixie.environ.fixie_envvar_names">
+<code class="descclassname">fixie.environ.</code><code class="descname">fixie_envvar_names</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fixie/environ.html#fixie_envvar_names"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fixie.environ.fixie_envvar_names" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the fixie environment variable names as a set of str.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="fixie.environ.fixie_job_aliases_file">
+<code class="descclassname">fixie.environ.</code><code class="descname">fixie_job_aliases_file</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fixie/environ.html#fixie_job_aliases_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fixie.environ.fixie_job_aliases_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Ensures and returns the $FIXIE_JOB_ALIASES_FILE</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="fixie.environ.fixie_jobid_file">
+<code class="descclassname">fixie.environ.</code><code class="descname">fixie_jobid_file</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fixie/environ.html#fixie_jobid_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fixie.environ.fixie_jobid_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Ensures and returns the $FIXIE_JOBID_FILE</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="fixie.environ.fixie_jobs_dir">
+<code class="descclassname">fixie.environ.</code><code class="descname">fixie_jobs_dir</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fixie/environ.html#fixie_jobs_dir"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fixie.environ.fixie_jobs_dir" title="Permalink to this definition">¶</a></dt>
+<dd><p>Ensures and returns the $FIXIE_JOBS_DIR</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="fixie.environ.fixie_logfile">
+<code class="descclassname">fixie.environ.</code><code class="descname">fixie_logfile</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fixie/environ.html#fixie_logfile"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fixie.environ.fixie_logfile" title="Permalink to this definition">¶</a></dt>
+<dd><p>Ensures and returns the $FIXIE_LOGFILE</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="fixie.environ.fixie_paths_dir">
+<code class="descclassname">fixie.environ.</code><code class="descname">fixie_paths_dir</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fixie/environ.html#fixie_paths_dir"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fixie.environ.fixie_paths_dir" title="Permalink to this definition">¶</a></dt>
+<dd><p>Ensures and returns the $FIXIE_PATHS_DIR</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="fixie.environ.fixie_sims_dir">
+<code class="descclassname">fixie.environ.</code><code class="descname">fixie_sims_dir</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fixie/environ.html#fixie_sims_dir"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fixie.environ.fixie_sims_dir" title="Permalink to this definition">¶</a></dt>
+<dd><p>Ensures and returns the $FIXIE_SIMS_DIR</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="fixie.environ.is_dict_str_str_or_none">
+<code class="descclassname">fixie.environ.</code><code class="descname">is_dict_str_str_or_none</code><span class="sig-paren">(</span><em>x</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fixie/environ.html#is_dict_str_str_or_none"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fixie.environ.is_dict_str_str_or_none" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checks if x is a mutable mapping from strings to strings or None</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="fixie.environ.list_to_csv">
+<code class="descclassname">fixie.environ.</code><code class="descname">list_to_csv</code><span class="sig-paren">(</span><em>x</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fixie/environ.html#list_to_csv"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fixie.environ.list_to_csv" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts a list of str to a comma-separated string.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="fixie.environ.setup">
+<code class="descclassname">fixie.environ.</code><code class="descname">setup</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fixie/environ.html#setup"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fixie.environ.setup" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="fixie.environ.teardown">
+<code class="descclassname">fixie.environ.</code><code class="descname">teardown</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fixie/environ.html#teardown"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fixie.environ.teardown" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+        <p class="logo"><a href="../index.html" title="index">
+          <img class="logo" src="../_static/fixie-logo.png" alt="Logo"/>
+        </a></p>
+  <div class="sphinxprev">
+    <h4>Previous page</h4>
+    <p class="topless"><a href="fixie-request_handler.html"
+                          title="Previous page">&larr; JSON Validating Request Handler (<code class="docutils literal"><span class="pre">fixie.request_handler</span></code>)</a></p>
+  </div>
+  <div class="sphinxnext">
+    <h4>Next page</h4>
+    <p class="topless"><a href="fixie-logger.html"
+                          title="Next page">&rarr; Logger (<code class="docutils literal"><span class="pre">fixie.logger</span></code>)</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/api/fixie-environ.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+    
+    
+        <div class="sidebar-toggle-group no-js">
+            
+            <button class="sidebar-toggle" id="sidebar-hide" title="Hide the sidebar menu">
+                 «
+                <span class="show-for-small">hide menu</span>
+                
+            </button>
+            <button class="sidebar-toggle" id="sidebar-show" title="Show the sidebar menu">
+                
+                <span class="show-for-small">menu</span>
+                <span class="hide-for-small">sidebar</span>
+                 »
+            </button>
+        </div>
+    
+      <div class="clearer"></div>
+    </div>
+    <div class="relbar-bottom">
+        
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> &nbsp; &nbsp;</li>
+        <li class="right" >
+          <a href="fixie-logger.html" title="Logger (fixie.logger)"
+             >next</a> &nbsp; &nbsp;</li>
+        <li class="right" >
+          <a href="fixie-request_handler.html" title="JSON Validating Request Handler (fixie.request_handler)"
+             >previous</a> &nbsp; &nbsp;</li>
+    <li><a href="../index.html">fixie  documentation</a> &#187;</li>
+
+          <li class="nav-item nav-item-1"><a href="index.html" >Fixie API</a> &#187;</li> 
+      </ul>
+    </div>
+    </div>
+
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2018, Anthony Scopatz.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.6.
+    </div>
+    <!-- cloud_sptheme 1.4 -->
+  </body>
+</html>

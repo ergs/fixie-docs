@@ -1,0 +1,578 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>fixie_data.paths &#8212; fixie  documentation</title>
+    <link rel="stylesheet" href="../../_static/numpy_friendly.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Noticia+Text|Open+Sans|Droid+Sans+Mono" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../_static/jquery.cookie.js"></script>
+    <script type="text/javascript" src="../../_static/cloud.base.js"></script>
+    <script type="text/javascript" src="../../_static/cloud.js"></script>
+    <link rel="shortcut icon" href="../../_static/fixie-logo.ico"/>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+     
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="canonical" href="http://xon.sh/_modules/fixie_data/paths.html"/>
+
+  </head>
+  <body>
+    <div class="relbar-top">
+        
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> &nbsp; &nbsp;</li>
+    <li><a href="../../index.html">fixie  documentation</a> &#187;</li>
+
+          <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &#187;</li> 
+      </ul>
+    </div>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for fixie_data.paths</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Manages paths for fixie data service.&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">import</span> <span class="nn">glob</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">import</span> <span class="nn">fnmatch</span>
+<span class="kn">import</span> <span class="nn">urllib.parse</span>
+
+<span class="kn">from</span> <span class="nn">lazyasd</span> <span class="k">import</span> <span class="n">lazyobject</span>
+
+<span class="kn">from</span> <span class="nn">fixie</span> <span class="k">import</span> <span class="n">json</span>
+<span class="kn">from</span> <span class="nn">fixie</span> <span class="k">import</span> <span class="n">ENV</span><span class="p">,</span> <span class="n">flock</span><span class="p">,</span> <span class="n">verify_user</span>
+
+
+<span class="n">_USER_PATH_FILE_TEMPLATE</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">{0}</span><span class="s1">/</span><span class="si">{1}</span><span class="s1">.json&#39;</span>
+
+
+<span class="nd">@lazyobject</span>
+<span class="k">def</span> <span class="nf">cyclus_lib</span><span class="p">():</span>
+    <span class="kn">from</span> <span class="nn">cyclus</span> <span class="k">import</span> <span class="n">lib</span>
+    <span class="k">return</span> <span class="n">lib</span>
+
+
+<span class="k">def</span> <span class="nf">_user_path_file</span><span class="p">(</span><span class="n">user</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Helper function for making user path file&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">_USER_PATH_FILE_TEMPLATE</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">ENV</span><span class="p">[</span><span class="s1">&#39;FIXIE_PATHS_DIR&#39;</span><span class="p">],</span> <span class="n">user</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">_load_user_paths</span><span class="p">(</span><span class="n">user_or_file</span><span class="p">,</span> <span class="n">is_user</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>  <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Helper function for loading a user paths file.&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="s1">&#39;raise_errors&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+        <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;raise_errors&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">user_path_file</span> <span class="o">=</span> <span class="n">_user_path_file</span><span class="p">(</span><span class="n">user_or_file</span><span class="p">)</span> <span class="k">if</span> <span class="n">is_user</span> <span class="k">else</span> <span class="n">user_or_file</span>
+    <span class="k">with</span> <span class="n">flock</span><span class="p">(</span><span class="n">user_path_file</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="k">as</span> <span class="n">lockfd</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">lockfd</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span>
+        <span class="k">elif</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">user_path_file</span><span class="p">):</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">user_path_file</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                <span class="n">paths</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">info</span> <span class="ow">in</span> <span class="n">paths</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+                <span class="n">info</span><span class="p">[</span><span class="s1">&#39;holding&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;holding&#39;</span><span class="p">,</span> <span class="s1">&#39;inf&#39;</span><span class="p">))</span>
+            <span class="k">return</span> <span class="n">paths</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">{}</span>
+
+
+<span class="k">def</span> <span class="nf">_dump_user_paths</span><span class="p">(</span><span class="n">user</span><span class="p">,</span> <span class="n">paths</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Helper function for dumping a user paths file. Returns whether or</span>
+<span class="sd">    not the dump occured successfully.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="s1">&#39;raise_errors&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+        <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;raise_errors&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">user_path_file</span> <span class="o">=</span> <span class="n">_user_path_file</span><span class="p">(</span><span class="n">user</span><span class="p">)</span>
+    <span class="k">with</span> <span class="n">flock</span><span class="p">(</span><span class="n">user_path_file</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="k">as</span> <span class="n">lockfd</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">lockfd</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;raise_errors&#39;</span><span class="p">]:</span>
+                <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s1">&#39;Could not dump user paths file for &#39;</span> <span class="o">+</span> <span class="n">user</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">user_path_file</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">paths</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="k">return</span> <span class="kc">True</span>
+
+
+<div class="viewcode-block" id="resolve_pending_paths"><a class="viewcode-back" href="../../api/fixie_data-paths.html#fixie_data.paths.resolve_pending_paths">[docs]</a><span class="k">def</span> <span class="nf">resolve_pending_paths</span><span class="p">(</span><span class="n">user</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;This function searches for any pending path files for a user and then adds</span>
+<span class="sd">    their information into the users path file (``$FIXIE_PATHS_DIR/user.json``).</span>
+<span class="sd">    This will return the contents of the paths file</span>
+<span class="sd">    after the update. Pending path files must be names to match the glob:</span>
+<span class="sd">    ``$FIXIE_PATHS_DIR/username*-pending-path.json``. Additional keyword arguments</span>
+<span class="sd">    are passed into ``fixie.flock()``. Returns None if the user paths file could</span>
+<span class="sd">    not be loaded.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">pattern</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">{0}</span><span class="s1">/</span><span class="si">{1}</span><span class="s1">*-pending-path.json&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">ENV</span><span class="p">[</span><span class="s1">&#39;FIXIE_PATHS_DIR&#39;</span><span class="p">],</span> <span class="n">user</span><span class="p">)</span>
+    <span class="n">files</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">pattern</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">files</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">_load_user_paths</span><span class="p">(</span><span class="n">user</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="c1"># actually have pending files, lets read them in, update them, add them to the</span>
+    <span class="c1"># existing the paths file, and then delete the pending files.</span>
+    <span class="n">new_paths</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">fname</span> <span class="ow">in</span> <span class="n">files</span><span class="p">:</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">new_path</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+        <span class="c1"># need to add created time of file</span>
+        <span class="n">new_path</span><span class="p">[</span><span class="s1">&#39;holding&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">new_path</span><span class="p">[</span><span class="s1">&#39;holding&#39;</span><span class="p">])</span>
+        <span class="n">new_path</span><span class="p">[</span><span class="s1">&#39;created&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">stat</span><span class="p">(</span><span class="n">new_path</span><span class="p">[</span><span class="s1">&#39;file&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">st_ctime</span>
+        <span class="n">new_paths</span><span class="p">[</span><span class="n">new_path</span><span class="p">[</span><span class="s1">&#39;path&#39;</span><span class="p">]]</span> <span class="o">=</span> <span class="n">new_path</span>
+    <span class="n">paths</span> <span class="o">=</span> <span class="n">_load_user_paths</span><span class="p">(</span><span class="n">user</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">paths</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span>
+    <span class="n">paths</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">new_paths</span><span class="p">)</span>
+    <span class="n">_dump_user_paths</span><span class="p">(</span><span class="n">user</span><span class="p">,</span> <span class="n">paths</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">fname</span> <span class="ow">in</span> <span class="n">files</span><span class="p">:</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">paths</span></div>
+
+
+<div class="viewcode-block" id="listpaths"><a class="viewcode-back" href="../../api/fixie_data-paths.html#fixie_data.paths.listpaths">[docs]</a><span class="k">def</span> <span class="nf">listpaths</span><span class="p">(</span><span class="n">user</span><span class="p">,</span> <span class="n">token</span><span class="p">,</span> <span class="n">pattern</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Lists paths for a user, matching a glob pattern if provided.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    user : str</span>
+<span class="sd">        Name of user to list paths for.</span>
+<span class="sd">    token : str</span>
+<span class="sd">        Token for a user.</span>
+<span class="sd">    pattern : str or None, optional</span>
+<span class="sd">        Glob string to match paths. If None or an empty string, all</span>
+<span class="sd">        paths are returned.</span>
+<span class="sd">    kwargs : other key words</span>
+<span class="sd">        Passed into ``fixie.flock()`` when loading user paths file.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    paths : list of str or None</span>
+<span class="sd">        Path names that matched the given pattern. None if status is False.</span>
+<span class="sd">    status : bool</span>
+<span class="sd">        Whether the paths were correctly found.</span>
+<span class="sd">    message : str</span>
+<span class="sd">        Status message, if needed.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">valid</span><span class="p">,</span> <span class="n">msg</span><span class="p">,</span> <span class="n">status</span> <span class="o">=</span> <span class="n">verify_user</span><span class="p">(</span><span class="n">user</span><span class="p">,</span> <span class="n">token</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">status</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="n">msg</span>
+    <span class="c1"># load the user file</span>
+    <span class="n">infos</span> <span class="o">=</span> <span class="n">resolve_pending_paths</span><span class="p">(</span><span class="n">user</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">infos</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="s1">&#39;User paths file could not be loaded.&#39;</span>
+    <span class="c1"># filter the paths</span>
+    <span class="n">paths</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">infos</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+    <span class="k">if</span> <span class="n">pattern</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">r</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">fnmatch</span><span class="o">.</span><span class="n">translate</span><span class="p">(</span><span class="n">pattern</span><span class="p">))</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="s1">&#39;Could not compile path pattern&#39;</span>
+        <span class="n">paths</span> <span class="o">=</span> <span class="p">[</span><span class="n">p</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">paths</span> <span class="k">if</span> <span class="n">r</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">paths</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="s1">&#39;Paths listed&#39;</span></div>
+
+
+<span class="k">def</span> <span class="nf">_pathkey</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">x</span><span class="p">[</span><span class="s1">&#39;path&#39;</span><span class="p">]</span>
+
+
+<div class="viewcode-block" id="info"><a class="viewcode-back" href="../../api/fixie_data-paths.html#fixie_data.paths.info">[docs]</a><span class="k">def</span> <span class="nf">info</span><span class="p">(</span><span class="n">user</span><span class="p">,</span> <span class="n">token</span><span class="p">,</span> <span class="n">paths</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">pattern</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Retrieves metadata information for paths.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    user : str</span>
+<span class="sd">        Name of user to list paths for.</span>
+<span class="sd">    token : str</span>
+<span class="sd">        Token for a user.</span>
+<span class="sd">    paths : str or list of str or None, optional</span>
+<span class="sd">        Only return info for specific paths. If non-empty, pattern must be empty.</span>
+<span class="sd">    pattern : str or None, optional</span>
+<span class="sd">        Glob string to match paths. If None or an empty string, all</span>
+<span class="sd">        paths are returned. If non-empty, paths must be empty.</span>
+<span class="sd">    kwargs : other key words</span>
+<span class="sd">        Passed into ``fixie.flock()`` when loading user paths file.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    infos : list of dicts or None</span>
+<span class="sd">        Path infomation dicts. None if status is False.</span>
+<span class="sd">    status : bool</span>
+<span class="sd">        Whether the paths were correctly found.</span>
+<span class="sd">    message : str</span>
+<span class="sd">        Status message, if needed.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">paths</span> <span class="ow">and</span> <span class="n">pattern</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="s1">&#39;Only one of paths and patterns may be non-empty&#39;</span>
+    <span class="n">valid</span><span class="p">,</span> <span class="n">msg</span><span class="p">,</span> <span class="n">status</span> <span class="o">=</span> <span class="n">verify_user</span><span class="p">(</span><span class="n">user</span><span class="p">,</span> <span class="n">token</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">status</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="n">msg</span>
+    <span class="c1"># load the user file</span>
+    <span class="n">userpaths</span> <span class="o">=</span> <span class="n">resolve_pending_paths</span><span class="p">(</span><span class="n">user</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">userpaths</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="s1">&#39;User paths file could not be loaded.&#39;</span>
+    <span class="c1"># filter paths and convert to list</span>
+    <span class="k">if</span> <span class="n">paths</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">paths</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="n">paths</span> <span class="o">=</span> <span class="p">[</span><span class="n">paths</span><span class="p">]</span>
+        <span class="n">infos</span> <span class="o">=</span> <span class="p">[</span><span class="n">userpaths</span><span class="p">[</span><span class="n">path</span><span class="p">]</span> <span class="k">for</span> <span class="n">path</span> <span class="ow">in</span> <span class="n">paths</span> <span class="k">if</span> <span class="n">path</span> <span class="ow">in</span> <span class="n">userpaths</span><span class="p">]</span>
+    <span class="k">elif</span> <span class="n">pattern</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">r</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">fnmatch</span><span class="o">.</span><span class="n">translate</span><span class="p">(</span><span class="n">pattern</span><span class="p">))</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="s1">&#39;Could not compile path pattern&#39;</span>
+        <span class="n">infos</span> <span class="o">=</span> <span class="p">[</span><span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">userpaths</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">r</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">k</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">]</span>
+        <span class="n">infos</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="n">_pathkey</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">infos</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">userpaths</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+        <span class="n">infos</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="n">_pathkey</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">infos</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="s1">&#39;Info found&#39;</span></div>
+
+
+<span class="k">def</span> <span class="nf">_fetch_url</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
+    <span class="c1"># first, get the pathname relative to the simulation dir</span>
+    <span class="n">relname</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">relpath</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">ENV</span><span class="p">[</span><span class="s1">&#39;FIXIE_SIMS_DIR&#39;</span><span class="p">])</span>
+    <span class="n">url</span> <span class="o">=</span> <span class="s1">&#39;/fetch?&#39;</span> <span class="o">+</span> <span class="n">urllib</span><span class="o">.</span><span class="n">parse</span><span class="o">.</span><span class="n">urlencode</span><span class="p">({</span><span class="s1">&#39;file&#39;</span><span class="p">:</span> <span class="n">relname</span><span class="p">})</span>
+    <span class="k">return</span> <span class="n">url</span><span class="p">,</span> <span class="s1">&#39;&#39;</span>
+
+
+<span class="k">def</span> <span class="nf">_fetch_bytes</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s1">&#39;rb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">b</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="n">b</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n\n</span><span class="s1">Failed to read file: &#39;</span> <span class="o">+</span> <span class="n">filename</span>
+    <span class="k">return</span> <span class="n">b</span><span class="p">,</span> <span class="n">msg</span>
+
+
+<span class="k">def</span> <span class="nf">_ensure_file</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">user</span><span class="p">,</span> <span class="n">token</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Ensures that a path actually exist, returns the filename, the</span>
+<span class="sd">    user paths, a status flag, and a message.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">valid</span><span class="p">,</span> <span class="n">msg</span><span class="p">,</span> <span class="n">status</span> <span class="o">=</span> <span class="n">verify_user</span><span class="p">(</span><span class="n">user</span><span class="p">,</span> <span class="n">token</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">valid</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">status</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="n">msg</span>
+    <span class="c1"># load the user file</span>
+    <span class="n">userpaths</span> <span class="o">=</span> <span class="n">resolve_pending_paths</span><span class="p">(</span><span class="n">user</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">userpaths</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="s1">&#39;User paths file could not be loaded.&#39;</span>
+    <span class="c1"># get the file</span>
+    <span class="n">info</span> <span class="o">=</span> <span class="n">userpaths</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">info</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="s1">&#39;Path </span><span class="si">{0!r}</span><span class="s1"> does not exist&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+    <span class="n">filename</span> <span class="o">=</span> <span class="n">info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;file&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">filename</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="s1">&#39;Path </span><span class="si">{0!r}</span><span class="s1"> does not not have a file&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="s1">&#39;Path file </span><span class="si">{0!r}</span><span class="s1"> does not exist or is a directory&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="n">msg</span>
+    <span class="k">return</span> <span class="n">filename</span><span class="p">,</span> <span class="n">userpaths</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="s1">&#39;&#39;</span>
+
+
+<div class="viewcode-block" id="fetch"><a class="viewcode-back" href="../../api/fixie_data-paths.html#fixie_data.paths.fetch">[docs]</a><span class="k">def</span> <span class="nf">fetch</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">user</span><span class="p">,</span> <span class="n">token</span><span class="p">,</span> <span class="n">url</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Retrieves a path from the server.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    path : str</span>
+<span class="sd">        Path to retrieve.</span>
+<span class="sd">    user : str</span>
+<span class="sd">        Name of user to fetch a file for.</span>
+<span class="sd">    token : str</span>
+<span class="sd">        Token for a user.</span>
+<span class="sd">    url : boolean, optional</span>
+<span class="sd">        Whether to return a URL from which the file can be downloaded, or</span>
+<span class="sd">        the bytes of the file itself.</span>
+<span class="sd">    kwargs : other key words</span>
+<span class="sd">        Passed into ``fixie.flock()`` when loading user paths file.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    url_or_file : str, bytes, or None</span>
+<span class="sd">        URL (relative to the server base) where the file may be downloaded (via GET),</span>
+<span class="sd">        or the bytes of the file, or None if the status is False/</span>
+<span class="sd">    status : bool</span>
+<span class="sd">        Whether the path can be fetched.</span>
+<span class="sd">    message : str</span>
+<span class="sd">        Status message, if needed.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">filename</span><span class="p">,</span> <span class="n">userpaths</span><span class="p">,</span> <span class="n">status</span><span class="p">,</span> <span class="n">msg</span> <span class="o">=</span> <span class="n">_ensure_file</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">user</span><span class="p">,</span> <span class="n">token</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">status</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="n">msg</span>
+    <span class="n">fetcher</span> <span class="o">=</span> <span class="n">_fetch_url</span> <span class="k">if</span> <span class="n">url</span> <span class="k">else</span> <span class="n">_fetch_bytes</span>
+    <span class="n">url_or_file</span><span class="p">,</span> <span class="n">msg</span> <span class="o">=</span> <span class="n">fetcher</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">url_or_file</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="n">msg</span>
+    <span class="k">return</span> <span class="n">url_or_file</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="s1">&#39;File fetched&#39;</span></div>
+
+
+<div class="viewcode-block" id="delete"><a class="viewcode-back" href="../../api/fixie_data-paths.html#fixie_data.paths.delete">[docs]</a><span class="k">def</span> <span class="nf">delete</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">user</span><span class="p">,</span> <span class="n">token</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Removes a path (and its file) from the server.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    path : str</span>
+<span class="sd">        Path to remove.</span>
+<span class="sd">    user : str</span>
+<span class="sd">        Name of user to remove path for.</span>
+<span class="sd">    token : str</span>
+<span class="sd">        Token for a user.</span>
+<span class="sd">    kwargs : other key words</span>
+<span class="sd">        Passed into ``fixie.flock()`` when loading user paths file.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    status : bool</span>
+<span class="sd">        Whether the path can be fetched.</span>
+<span class="sd">    message : str</span>
+<span class="sd">        Status message, if needed.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">filename</span><span class="p">,</span> <span class="n">userpaths</span><span class="p">,</span> <span class="n">status</span><span class="p">,</span> <span class="n">msg</span> <span class="o">=</span> <span class="n">_ensure_file</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">user</span><span class="p">,</span> <span class="n">token</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">status</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">False</span><span class="p">,</span> <span class="n">msg</span>
+    <span class="c1"># actually try to remove the file</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">False</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n\n</span><span class="s1">&#39;</span> <span class="o">+</span> <span class="s1">&#39;Could not remove path &#39;</span> <span class="o">+</span> <span class="n">path</span>
+    <span class="k">del</span> <span class="n">userpaths</span><span class="p">[</span><span class="n">path</span><span class="p">]</span>
+    <span class="n">status</span> <span class="o">=</span> <span class="n">_dump_user_paths</span><span class="p">(</span><span class="n">user</span><span class="p">,</span> <span class="n">userpaths</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">status</span><span class="p">:</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;Removed file </span><span class="si">{0!r}</span><span class="s1"> but could not remove path entry </span><span class="si">{1!r}</span><span class="s1">, &#39;</span>
+               <span class="s1">&#39;system is in inconsistent state.&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">False</span><span class="p">,</span> <span class="n">msg</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">path</span><span class="p">)</span>
+    <span class="k">return</span> <span class="kc">True</span><span class="p">,</span> <span class="s1">&#39;File removed&#39;</span></div>
+
+
+<span class="k">def</span> <span class="nf">_open_db</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Opens a Cyclus databse.&quot;&quot;&quot;</span>
+    <span class="n">db</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">msg</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+    <span class="n">_</span><span class="p">,</span> <span class="n">ext</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">ext</span> <span class="o">==</span> <span class="s1">&#39;.h5&#39;</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">db</span> <span class="o">=</span> <span class="n">cyclus_lib</span><span class="o">.</span><span class="n">Hdf5Back</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n\n</span><span class="s1">Could not open database as HDF5 file.&#39;</span>
+    <span class="k">elif</span> <span class="n">ext</span> <span class="o">==</span> <span class="s1">&#39;.sqlite&#39;</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">db</span> <span class="o">=</span> <span class="n">cyclus_lib</span><span class="o">.</span><span class="n">SqliteBack</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n\n</span><span class="s1">Could not open database as SQLite file.&#39;</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="s1">&#39;extension not recongnized as Cyclus output file.&#39;</span>
+    <span class="k">return</span> <span class="n">db</span><span class="p">,</span> <span class="n">msg</span>
+
+
+<div class="viewcode-block" id="table"><a class="viewcode-back" href="../../api/fixie_data-paths.html#fixie_data.paths.table">[docs]</a><span class="k">def</span> <span class="nf">table</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">user</span><span class="p">,</span> <span class="n">token</span><span class="p">,</span> <span class="n">conds</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;dataframe&#39;</span><span class="p">,</span> <span class="n">orient</span><span class="o">=</span><span class="s1">&#39;columns&#39;</span><span class="p">,</span>
+          <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Retrieves a table from a path (which must represent a Cyclus database).</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    name : str</span>
+<span class="sd">        Name of table to retrieve.</span>
+<span class="sd">    path : str</span>
+<span class="sd">        Path to remove.</span>
+<span class="sd">    user : str</span>
+<span class="sd">        Name of user to remove path for.</span>
+<span class="sd">    token : str</span>
+<span class="sd">        Token for a user.</span>
+<span class="sd">    conds : list of 3-tuples or None, optional</span>
+<span class="sd">        Conditions to filter table rows with. See the Cyclus FullBackend for</span>
+<span class="sd">        more information.  The default (None) is to provide the complete</span>
+<span class="sd">        table.</span>
+<span class="sd">    format : str, optional</span>
+<span class="sd">        Flag for type of object to return. If &quot;dataframe&quot; (default), a pandas</span>
+<span class="sd">        DataFrame will be returned. If &quot;json:dict&quot;, a Python dict that</span>
+<span class="sd">        is JSON serializable (via ``fixie.json``) will be returned. If &quot;json&quot; or</span>
+<span class="sd">        &quot;json:str&quot; a JSON string will be returned.</span>
+<span class="sd">    orient : str, optional</span>
+<span class="sd">        Flag for orientation that is passed into ``pandas.DataFrame.to_json()``</span>
+<span class="sd">        See this method for more documentation.</span>
+<span class="sd">    kwargs : other key words</span>
+<span class="sd">        Passed into ``fixie.flock()`` when loading user paths file.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    table : pandas.DataFrame or dict str or None</span>
+<span class="sd">        The contents of the table, structure depends on format and orient</span>
+<span class="sd">        kwargs. None if table could not be loaded</span>
+<span class="sd">    status : bool</span>
+<span class="sd">        Whether the table could be loaded.</span>
+<span class="sd">    message : str</span>
+<span class="sd">        Status message, if needed.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">filename</span><span class="p">,</span> <span class="n">userpaths</span><span class="p">,</span> <span class="n">status</span><span class="p">,</span> <span class="n">msg</span> <span class="o">=</span> <span class="n">_ensure_file</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">user</span><span class="p">,</span> <span class="n">token</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">status</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="n">msg</span>
+    <span class="n">db</span><span class="p">,</span> <span class="n">msg</span> <span class="o">=</span> <span class="n">_open_db</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">db</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="n">msg</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">with</span> <span class="n">db</span><span class="p">:</span>
+            <span class="n">tbl</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">conds</span><span class="o">=</span><span class="n">conds</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n\n</span><span class="s1">Table could not be loaded from database&#39;</span>
+    <span class="c1"># now that we have the table, format it.</span>
+    <span class="k">if</span> <span class="nb">format</span> <span class="o">==</span> <span class="s1">&#39;dataframe&#39;</span><span class="p">:</span>
+        <span class="n">rtn</span> <span class="o">=</span> <span class="n">tbl</span>
+    <span class="k">elif</span> <span class="nb">format</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;json&#39;</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">rtn</span> <span class="o">=</span> <span class="n">tbl</span><span class="o">.</span><span class="n">to_json</span><span class="p">(</span><span class="n">orient</span><span class="o">=</span><span class="n">orient</span><span class="p">,</span> <span class="n">default_handler</span><span class="o">=</span><span class="n">json</span><span class="o">.</span><span class="n">default</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n\n</span><span class="s1">Could not format table&#39;</span>
+        <span class="k">if</span> <span class="nb">format</span> <span class="o">==</span> <span class="s2">&quot;json:dict&quot;</span><span class="p">:</span>
+            <span class="n">rtn</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">rtn</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="s1">&#39;Table format </span><span class="si">{0!r}</span><span class="s1"> not valid&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">format</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">rtn</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="s1">&#39;Table read&#39;</span></div>
+
+
+<div class="viewcode-block" id="gc"><a class="viewcode-back" href="../../api/fixie_data-paths.html#fixie_data.paths.gc">[docs]</a><span class="k">def</span> <span class="nf">gc</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Cleans up paths &amp; files that have past their holding time.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    kwargs : other key words</span>
+<span class="sd">        Passed into ``fixie.flock()`` when loading user paths file.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    status : bool</span>
+<span class="sd">        Whether garbage collection completed.</span>
+<span class="sd">    message : str</span>
+<span class="sd">        Status message, if needed.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="s1">&#39;raise_errors&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+        <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;raise_errors&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">msg</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+    <span class="n">now</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+    <span class="n">pattern</span> <span class="o">=</span> <span class="n">ENV</span><span class="p">[</span><span class="s1">&#39;FIXIE_PATHS_DIR&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39;/*.json&#39;</span>
+    <span class="k">for</span> <span class="n">user_path_file</span> <span class="ow">in</span> <span class="n">glob</span><span class="o">.</span><span class="n">iglob</span><span class="p">(</span><span class="n">pattern</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">user_path_file</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;-pending-path.json&#39;</span><span class="p">):</span>
+            <span class="k">continue</span>
+        <span class="k">with</span> <span class="n">flock</span><span class="p">(</span><span class="n">user_path_file</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="k">as</span> <span class="n">lockfd</span><span class="p">:</span>
+            <span class="c1"># need to keep file locked for whole gc process</span>
+            <span class="k">if</span> <span class="n">lockfd</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">msg</span> <span class="o">+=</span> <span class="n">user_path_file</span> <span class="o">+</span> <span class="s1">&#39; could not be loaded</span><span class="se">\n\n</span><span class="s1">&#39;</span>
+                <span class="k">continue</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">user_path_file</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                <span class="n">paths</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+            <span class="c1"># delete files</span>
+            <span class="n">paths_to_del</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">path</span><span class="p">,</span> <span class="n">info</span> <span class="ow">in</span> <span class="n">paths</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="n">age</span> <span class="o">=</span> <span class="n">now</span> <span class="o">-</span> <span class="n">info</span><span class="p">[</span><span class="s1">&#39;created&#39;</span><span class="p">]</span>
+                <span class="n">holding</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;holding&#39;</span><span class="p">,</span> <span class="s1">&#39;inf&#39;</span><span class="p">))</span>
+                <span class="n">fname</span> <span class="o">=</span> <span class="n">info</span><span class="p">[</span><span class="s1">&#39;file&#39;</span><span class="p">]</span>
+                <span class="k">if</span> <span class="n">age</span> <span class="o">&gt;=</span> <span class="n">holding</span> <span class="ow">and</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">fname</span><span class="p">):</span>
+                    <span class="k">try</span><span class="p">:</span>
+                        <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span>
+                    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                        <span class="n">msg</span> <span class="o">+=</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">Could not delete file &#39;</span> <span class="o">+</span> <span class="n">fname</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n\n</span><span class="s1">&#39;</span>
+                        <span class="k">continue</span>
+                    <span class="n">paths_to_del</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+            <span class="c1"># delete paths</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">paths_to_del</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="k">for</span> <span class="n">path</span> <span class="ow">in</span> <span class="n">paths_to_del</span><span class="p">:</span>
+                <span class="k">del</span> <span class="n">paths</span><span class="p">[</span><span class="n">path</span><span class="p">]</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">user_path_file</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">paths</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="k">return</span> <span class="ow">not</span> <span class="n">msg</span><span class="p">,</span> <span class="n">msg</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+        <p class="logo"><a href="../../index.html" title="index">
+          <img class="logo" src="../../_static/fixie-logo.png" alt="Logo"/>
+        </a></p>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+    
+    
+        <div class="sidebar-toggle-group no-js">
+            
+            <button class="sidebar-toggle" id="sidebar-hide" title="Hide the sidebar menu">
+                 «
+                <span class="show-for-small">hide menu</span>
+                
+            </button>
+            <button class="sidebar-toggle" id="sidebar-show" title="Show the sidebar menu">
+                
+                <span class="show-for-small">menu</span>
+                <span class="hide-for-small">sidebar</span>
+                 »
+            </button>
+        </div>
+    
+      <div class="clearer"></div>
+    </div>
+    <div class="relbar-bottom">
+        
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> &nbsp; &nbsp;</li>
+    <li><a href="../../index.html">fixie  documentation</a> &#187;</li>
+
+          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &#187;</li> 
+      </ul>
+    </div>
+    </div>
+
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2018, Anthony Scopatz.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.6.
+    </div>
+    <!-- cloud_sptheme 1.4 -->
+  </body>
+</html>

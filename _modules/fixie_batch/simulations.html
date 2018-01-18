@@ -1,0 +1,588 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>fixie_batch.simulations &#8212; fixie  documentation</title>
+    <link rel="stylesheet" href="../../_static/numpy_friendly.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Noticia+Text|Open+Sans|Droid+Sans+Mono" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../_static/jquery.cookie.js"></script>
+    <script type="text/javascript" src="../../_static/cloud.base.js"></script>
+    <script type="text/javascript" src="../../_static/cloud.js"></script>
+    <link rel="shortcut icon" href="../../_static/fixie-logo.ico"/>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+     
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="canonical" href="http://xon.sh/_modules/fixie_batch/simulations.html"/>
+
+  </head>
+  <body>
+    <div class="relbar-top">
+        
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> &nbsp; &nbsp;</li>
+    <li><a href="../../index.html">fixie  documentation</a> &#187;</li>
+
+          <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &#187;</li> 
+      </ul>
+    </div>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for fixie_batch.simulations</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Tools for spawning, canceling, and querying cyclus simulations. Simulations are</span>
+<span class="sd">spawned detached from the parent process. All information about running processes</span>
+<span class="sd">is stored on the file system. These tools should be robust to the server or other</span>
+<span class="sd">managing process going down.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">import</span> <span class="nn">signal</span>
+<span class="kn">from</span> <span class="nn">collections.abc</span> <span class="k">import</span> <span class="n">Mapping</span><span class="p">,</span> <span class="n">Set</span>
+
+<span class="kn">from</span> <span class="nn">pprintpp</span> <span class="k">import</span> <span class="n">pformat</span>
+<span class="kn">from</span> <span class="nn">lazyasd</span> <span class="k">import</span> <span class="n">lazyobject</span>
+<span class="kn">from</span> <span class="nn">fixie</span> <span class="k">import</span> <span class="p">(</span><span class="n">ENV</span><span class="p">,</span> <span class="n">verify_user</span><span class="p">,</span> <span class="n">next_jobid</span><span class="p">,</span> <span class="n">detached_call</span><span class="p">,</span>
+    <span class="n">register_job_alias</span><span class="p">,</span> <span class="n">jobids_from_alias</span><span class="p">,</span> <span class="n">jobids_with_name</span><span class="p">,</span> <span class="n">default_path</span><span class="p">)</span>
+
+<span class="kn">from</span> <span class="nn">fixie_batch.environ</span> <span class="k">import</span> <span class="n">QUEUE_STATUSES</span>
+
+
+<span class="n">SPAWN_XSH</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;#!/usr/bin/env xonsh</span>
+<span class="s2">import os</span>
+<span class="s2">import json</span>
+<span class="s2">import time</span>
+
+
+<span class="s2">def queued_ids():</span>
+<span class="s2">    # sorted jobids that are in the queue</span>
+<span class="s2">    qids = [int(j.name[:-5]) for j in os.scandir(&#39;{{FIXIE_QUEUED_JOBS_DIR}}&#39;)]</span>
+<span class="s2">    qids.sort()</span>
+<span class="s2">    return qids</span>
+
+
+<span class="s2"># variables from calling process</span>
+<span class="s2">simulation = {{simulation}}</span>
+
+<span class="s2"># derived variables</span>
+<span class="s2">out = &#39;{{FIXIE_SIMS_DIR}}/{{jobid}}.h5&#39;</span>
+<span class="s2">inp = json.dumps(simulation, sort_keys=True)</span>
+
+<span class="s2"># make a jobs file and add it to the queue</span>
+<span class="s2">job = {</span>
+<span class="s2">    &#39;interactive&#39;: {{interactive}},</span>
+<span class="s2">    &#39;jobid&#39;: {{jobid}},</span>
+<span class="s2">    &#39;notify&#39;: {{notify}},</span>
+<span class="s2">    &#39;outfile&#39;: out,</span>
+<span class="s2">    &#39;path&#39;: &#39;{{path}}&#39;,</span>
+<span class="s2">    &#39;pid&#39;: os.getpid(),</span>
+<span class="s2">    &#39;permissions&#39;: {{permissions}},</span>
+<span class="s2">    &#39;post&#39;: {{post}},</span>
+<span class="s2">    &#39;project&#39;: &#39;{{project}}&#39;,</span>
+<span class="s2">    &#39;queue_starttime&#39;: time.time(),</span>
+<span class="s2">    &#39;simulation&#39;: simulation,</span>
+<span class="s2">    &#39;user&#39;: &#39;{{user}}&#39;,</span>
+<span class="s2">    }</span>
+<span class="s2">with open(&#39;{{FIXIE_QUEUED_JOBS_DIR}}/{{jobid}}.json&#39;, &#39;w&#39;) as f:</span>
+<span class="s2">    json.dump(job, f, sort_keys=True, indent=1)</span>
+
+<span class="s2"># wait for the queue to be free, and then move the jobs file</span>
+<span class="s2">qids = queued_ids()</span>
+<span class="s2">while {{jobid}} not in qids[:{{FIXIE_NJOBS}}]:</span>
+<span class="s2">    if {{jobid}} not in qids:</span>
+<span class="s2">        # job cancels itself if it isn&#39;t in the queue at all!</span>
+<span class="s2">        err = &#39;Job canceled itself after jobfile was removed from queue&#39;</span>
+<span class="s2">        job.update({&#39;returncode&#39;: 1,</span>
+<span class="s2">                    &#39;out&#39;: None,</span>
+<span class="s2">                    &#39;err&#39;: err,</span>
+<span class="s2">                    &#39;queue_endtime&#39;: time.time()})</span>
+<span class="s2">        with open(&#39;{{FIXIE_CANCELED_JOBS_DIR}}/{{jobid}}.json&#39;, &#39;w&#39;) as f:</span>
+<span class="s2">            json.dump(job, f, sort_keys=True, indent=1)</span>
+<span class="s2">        import sys</span>
+<span class="s2">        sys.exit(err)</span>
+<span class="s2">    time.sleep(0.1)</span>
+<span class="s2">    qids = queued_ids()</span>
+<span class="s2">job[&#39;queue_endtime&#39;] = time.time()</span>
+<span class="s2">os.remove(&#39;{{FIXIE_QUEUED_JOBS_DIR}}/{{jobid}}.json&#39;)</span>
+<span class="s2">with open(&#39;{{FIXIE_RUNNING_JOBS_DIR}}/{{jobid}}.json&#39;, &#39;w&#39;) as f:</span>
+<span class="s2">    json.dump(job, f, sort_keys=True, indent=1)</span>
+
+<span class="s2"># make a pending path file, to signal that a path is available.</span>
+<span class="s2">pending_path = {</span>
+<span class="s2">    &#39;file&#39;: out,</span>
+<span class="s2">    &#39;holding&#39;: {{FIXIE_HOLDING_TIME}},</span>
+<span class="s2">    &#39;jobid&#39;: {{jobid}},</span>
+<span class="s2">    &#39;path&#39;: &#39;{{path}}&#39;,</span>
+<span class="s2">    &#39;project&#39;: &#39;{{project}}&#39;,</span>
+<span class="s2">    &#39;user&#39;: &#39;{{user}}&#39;,</span>
+<span class="s2">    }</span>
+<span class="s2">with open(&#39;{{FIXIE_PATHS_DIR}}/{{user}}-{{jobid}}-pending-path.json&#39;, &#39;w&#39;) as f:</span>
+<span class="s2">    json.dump(pending_path, f, sort_keys=True, indent=1)</span>
+
+<span class="s2"># run cyclus itself</span>
+<span class="s2">with ${...}.swap(RAISE_SUBPROC_ERROR=False):</span>
+<span class="s2">    proc = !(cyclus -f json -o @(out) @(inp))</span>
+
+<span class="s2"># update and swap job file</span>
+<span class="s2">job.update({</span>
+<span class="s2">    &#39;returncode&#39;: proc.returncode,</span>
+<span class="s2">    &#39;starttime&#39;: proc.starttime,</span>
+<span class="s2">    &#39;endtime&#39;: proc.endtime,</span>
+<span class="s2">    &#39;out&#39;: proc.out,</span>
+<span class="s2">    &#39;err&#39;: proc.err,</span>
+<span class="s2">    })</span>
+<span class="s2">jobdir = &#39;{{FIXIE_COMPLETED_JOBS_DIR}}&#39; if proc else &#39;{{FIXIE_FAILED_JOBS_DIR}}&#39;</span>
+<span class="s2">os.remove(&#39;{{FIXIE_RUNNING_JOBS_DIR}}/{{jobid}}.json&#39;)</span>
+<span class="s2">with open(jobdir + &#39;/{{jobid}}.json&#39;, &#39;w&#39;) as f:</span>
+<span class="s2">    json.dump(job, f, sort_keys=True, indent=1)</span>
+<span class="s2">&quot;&quot;&quot;</span>
+
+
+<span class="nd">@lazyobject</span>
+<span class="k">def</span> <span class="nf">SPAWN_TEMPLATE</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;A jinja template for spawning simulations.&quot;&quot;&quot;</span>
+    <span class="kn">from</span> <span class="nn">jinja2</span> <span class="k">import</span> <span class="n">Template</span>
+    <span class="k">return</span> <span class="n">Template</span><span class="p">(</span><span class="n">SPAWN_XSH</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="spawn"><a class="viewcode-back" href="../../api/fixie_batch-simulations.html#fixie_batch.simulations.spawn">[docs]</a><span class="k">def</span> <span class="nf">spawn</span><span class="p">(</span><span class="n">simulation</span><span class="p">,</span> <span class="n">user</span><span class="p">,</span> <span class="n">token</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">project</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span>
+          <span class="n">permissions</span><span class="o">=</span><span class="s1">&#39;public&#39;</span><span class="p">,</span> <span class="n">post</span><span class="o">=</span><span class="p">(),</span> <span class="n">notify</span><span class="o">=</span><span class="p">(),</span> <span class="n">interactive</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+          <span class="n">return_pid</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Spawning simulations let’s the batch execution service know to run a</span>
+<span class="sd">    simulation as soon as possible.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    simulation : dict or string</span>
+<span class="sd">        Cyclus simulation, currently only dict methods are supported</span>
+<span class="sd">    user : str</span>
+<span class="sd">        Name of the user</span>
+<span class="sd">    token : str</span>
+<span class="sd">        Credential token for the user</span>
+<span class="sd">    name : str, optional</span>
+<span class="sd">        Alias for simulation, default &#39;&#39;</span>
+<span class="sd">    project : str, optional</span>
+<span class="sd">        Name of the project, default &#39;&#39;</span>
+<span class="sd">    path : str, optional</span>
+<span class="sd">        Path to suggest for output file. An empty string will apply</span>
+<span class="sd">        a default path name, which depends on the simulation name,</span>
+<span class="sd">        the project name, and the jobid.</span>
+<span class="sd">    permissions : str or list of str, optional</span>
+<span class="sd">        &quot;public&quot; (default), &quot;private&quot;, or a list of users. Currently only</span>
+<span class="sd">        public permissions are supported.</span>
+<span class="sd">    post : list, optional</span>
+<span class="sd">        Any post processing activities, not currently supported</span>
+<span class="sd">    notify : list, optional</span>
+<span class="sd">        Any notifications to register, not currently supported</span>
+<span class="sd">    interactive : bool, optional</span>
+<span class="sd">        True or False (default), not currently supported.</span>
+<span class="sd">    return_pid : bool, optional</span>
+<span class="sd">        Whether or not to return the PID of the detached child process.</span>
+<span class="sd">        Default False, this is mostly for testing.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    jobid : int</span>
+<span class="sd">        Unique job id of this run, this is negative if job</span>
+<span class="sd">        could not be spawned.</span>
+<span class="sd">    status : bool</span>
+<span class="sd">        Whether run was spawned successfully,</span>
+<span class="sd">    message : str</span>
+<span class="sd">        Message about status</span>
+<span class="sd">    pid : int, if return_pid is True</span>
+<span class="sd">        Child process id.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># validate all inputs</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">simulation</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">):</span>
+        <span class="k">return</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="s1">&#39;Simulation must be dict (i.e. mapping object) currently.&#39;</span>
+    <span class="k">if</span> <span class="n">permissions</span> <span class="o">!=</span> <span class="s1">&#39;public&#39;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="s1">&#39;Non-public permissions are not supported yet.&#39;</span>
+    <span class="k">if</span> <span class="n">post</span><span class="p">:</span>
+        <span class="k">return</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="s1">&#39;Post-processing activities are not supported yet.&#39;</span>
+    <span class="k">if</span> <span class="n">notify</span><span class="p">:</span>
+        <span class="k">return</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="s1">&#39;Notifications are not supported yet.&#39;</span>
+    <span class="k">if</span> <span class="n">interactive</span><span class="p">:</span>
+        <span class="k">return</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="s1">&#39;Interactive simulation spawning is not supported yet.&#39;</span>
+    <span class="n">valid</span><span class="p">,</span> <span class="n">msg</span><span class="p">,</span> <span class="n">status</span> <span class="o">=</span> <span class="n">verify_user</span><span class="p">(</span><span class="n">user</span><span class="p">,</span> <span class="n">token</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">status</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">valid</span><span class="p">:</span>
+        <span class="k">return</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="n">msg</span>
+    <span class="c1"># now we can actually spawn the simulation</span>
+    <span class="n">jobid</span> <span class="o">=</span> <span class="n">next_jobid</span><span class="p">()</span>
+    <span class="n">path</span> <span class="o">=</span> <span class="n">default_path</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">project</span><span class="o">=</span><span class="n">project</span><span class="p">,</span> <span class="n">jobid</span><span class="o">=</span><span class="n">jobid</span><span class="p">)</span>
+    <span class="n">holding</span> <span class="o">=</span> <span class="s2">&quot;&#39;inf&#39;&quot;</span> <span class="k">if</span> <span class="n">ENV</span><span class="p">[</span><span class="s1">&#39;FIXIE_HOLDING_TIME&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="nb">float</span><span class="p">(</span><span class="s1">&#39;inf&#39;</span><span class="p">)</span> \
+                      <span class="k">else</span> <span class="n">ENV</span><span class="p">[</span><span class="s1">&#39;FIXIE_HOLDING_TIME&#39;</span><span class="p">]</span>
+    <span class="n">ctx</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+            <span class="n">FIXIE_CANCELED_JOBS_DIR</span><span class="o">=</span><span class="n">ENV</span><span class="p">[</span><span class="s1">&#39;FIXIE_CANCELED_JOBS_DIR&#39;</span><span class="p">],</span>
+            <span class="n">FIXIE_COMPLETED_JOBS_DIR</span><span class="o">=</span><span class="n">ENV</span><span class="p">[</span><span class="s1">&#39;FIXIE_COMPLETED_JOBS_DIR&#39;</span><span class="p">],</span>
+            <span class="n">FIXIE_FAILED_JOBS_DIR</span><span class="o">=</span><span class="n">ENV</span><span class="p">[</span><span class="s1">&#39;FIXIE_FAILED_JOBS_DIR&#39;</span><span class="p">],</span>
+            <span class="n">FIXIE_HOLDING_TIME</span><span class="o">=</span><span class="n">holding</span><span class="p">,</span>
+            <span class="n">FIXIE_NJOBS</span><span class="o">=</span><span class="n">ENV</span><span class="p">[</span><span class="s1">&#39;FIXIE_NJOBS&#39;</span><span class="p">],</span>
+            <span class="n">FIXIE_PATHS_DIR</span><span class="o">=</span><span class="n">ENV</span><span class="p">[</span><span class="s1">&#39;FIXIE_PATHS_DIR&#39;</span><span class="p">],</span>
+            <span class="n">FIXIE_QUEUED_JOBS_DIR</span><span class="o">=</span><span class="n">ENV</span><span class="p">[</span><span class="s1">&#39;FIXIE_QUEUED_JOBS_DIR&#39;</span><span class="p">],</span>
+            <span class="n">FIXIE_RUNNING_JOBS_DIR</span><span class="o">=</span><span class="n">ENV</span><span class="p">[</span><span class="s1">&#39;FIXIE_RUNNING_JOBS_DIR&#39;</span><span class="p">],</span>
+            <span class="n">FIXIE_SIMS_DIR</span><span class="o">=</span><span class="n">ENV</span><span class="p">[</span><span class="s1">&#39;FIXIE_SIMS_DIR&#39;</span><span class="p">],</span>
+            <span class="n">interactive</span><span class="o">=</span><span class="n">interactive</span><span class="p">,</span>
+            <span class="n">jobid</span><span class="o">=</span><span class="n">jobid</span><span class="p">,</span>
+            <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
+            <span class="n">notify</span><span class="o">=</span><span class="nb">repr</span><span class="p">(</span><span class="n">notify</span><span class="p">),</span>
+            <span class="n">path</span><span class="o">=</span><span class="n">path</span><span class="p">,</span>
+            <span class="n">permissions</span><span class="o">=</span><span class="nb">repr</span><span class="p">(</span><span class="n">permissions</span><span class="p">),</span>
+            <span class="n">post</span><span class="o">=</span><span class="nb">repr</span><span class="p">(</span><span class="n">post</span><span class="p">),</span>
+            <span class="n">project</span><span class="o">=</span><span class="n">project</span><span class="p">,</span>
+            <span class="n">simulation</span><span class="o">=</span><span class="n">pformat</span><span class="p">(</span><span class="n">simulation</span><span class="p">),</span>
+            <span class="n">user</span><span class="o">=</span><span class="n">user</span><span class="p">,</span>
+            <span class="p">)</span>
+    <span class="n">script</span> <span class="o">=</span> <span class="n">SPAWN_TEMPLATE</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">ctx</span><span class="p">)</span>
+    <span class="n">cmd</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;xonsh&#39;</span><span class="p">,</span> <span class="s1">&#39;-c&#39;</span><span class="p">,</span> <span class="n">script</span><span class="p">]</span>
+    <span class="n">pid</span> <span class="o">=</span> <span class="n">detached_call</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">name</span> <span class="ow">or</span> <span class="n">project</span><span class="p">:</span>
+        <span class="n">register_job_alias</span><span class="p">(</span><span class="n">jobid</span><span class="p">,</span> <span class="n">user</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">project</span><span class="o">=</span><span class="n">project</span><span class="p">)</span>
+    <span class="n">rtn</span> <span class="o">=</span> <span class="p">(</span><span class="n">jobid</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="s1">&#39;Simulation spawned&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">return_pid</span><span class="p">:</span>
+        <span class="n">rtn</span> <span class="o">+=</span> <span class="p">(</span><span class="n">pid</span><span class="p">,)</span>
+    <span class="k">return</span> <span class="n">rtn</span></div>
+
+
+<span class="n">STATUS_IDS</span> <span class="o">=</span> <span class="p">{}</span>
+
+<span class="n">t</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">def </span><span class="si">{status}</span><span class="s2">_ids():</span>
+<span class="s2">    &quot;Set of </span><span class="si">{status}</span><span class="s2"> jobids.&quot;</span>
+<span class="s2">    ids = {{int(j.name[:-5]) for j in os.scandir(ENV[&#39;FIXIE_</span><span class="si">{STATUS}</span><span class="s2">_JOBS_DIR&#39;])}}</span>
+<span class="s2">    return ids</span>
+
+
+<span class="s2">STATUS_IDS[&#39;</span><span class="si">{status}</span><span class="s2">&#39;] = </span><span class="si">{status}</span><span class="s2">_ids</span>
+<span class="s2">&quot;&quot;&quot;</span>
+<span class="n">g</span> <span class="o">=</span> <span class="nb">globals</span><span class="p">()</span>
+<span class="k">for</span> <span class="n">status</span> <span class="ow">in</span> <span class="n">QUEUE_STATUSES</span><span class="p">:</span>
+    <span class="n">exec</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">status</span><span class="o">=</span><span class="n">status</span><span class="p">,</span> <span class="n">STATUS</span><span class="o">=</span><span class="n">status</span><span class="o">.</span><span class="n">upper</span><span class="p">()),</span> <span class="n">g</span><span class="p">)</span>
+<span class="k">del</span> <span class="n">g</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">status</span>
+
+
+<div class="viewcode-block" id="cancel"><a class="viewcode-back" href="../../api/fixie_batch-simulations.html#fixie_batch.simulations.cancel">[docs]</a><span class="k">def</span> <span class="nf">cancel</span><span class="p">(</span><span class="n">job</span><span class="p">,</span> <span class="n">user</span><span class="p">,</span> <span class="n">token</span><span class="p">,</span> <span class="n">project</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Cancels a job that is queued or running.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    job : int or str</span>
+<span class="sd">        If an integer, this is the jobid. If it is a string, it is interpreted as</span>
+<span class="sd">        a job name, and a jobid is looked up via the aliases cache.</span>
+<span class="sd">    user : str</span>
+<span class="sd">        Name of the user</span>
+<span class="sd">    token : str</span>
+<span class="sd">        Credential token for the user</span>
+<span class="sd">    project : str, optional</span>
+<span class="sd">        Name of the project, default &#39;&#39;, only used with alias lookup.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    jobid : int</span>
+<span class="sd">        Unique job id of the canceled run, this is negative if a unique jobid</span>
+<span class="sd">        could not be found.</span>
+<span class="sd">    status : bool</span>
+<span class="sd">        Whether run was successfully canceled.</span>
+<span class="sd">    message : str</span>
+<span class="sd">        Message about status</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># verify users</span>
+    <span class="n">valid</span><span class="p">,</span> <span class="n">msg</span><span class="p">,</span> <span class="n">status</span> <span class="o">=</span> <span class="n">verify_user</span><span class="p">(</span><span class="n">user</span><span class="p">,</span> <span class="n">token</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">status</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">valid</span><span class="p">:</span>
+        <span class="k">return</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="n">msg</span>
+    <span class="c1"># get jobids</span>
+    <span class="n">qids</span> <span class="o">=</span> <span class="n">queued_ids</span><span class="p">()</span>
+    <span class="n">rids</span> <span class="o">=</span> <span class="n">running_ids</span><span class="p">()</span>
+    <span class="n">qrids</span> <span class="o">=</span> <span class="n">qids</span> <span class="o">|</span> <span class="n">rids</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">job</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="n">jobids</span> <span class="o">=</span> <span class="n">jobids_from_alias</span><span class="p">(</span><span class="n">user</span><span class="p">,</span> <span class="n">job</span><span class="p">,</span> <span class="n">project</span><span class="o">=</span><span class="n">project</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">jobids</span> <span class="o">=</span> <span class="p">{</span><span class="n">job</span><span class="p">}</span>
+    <span class="c1"># check uniqueness and get jobid</span>
+    <span class="n">current</span> <span class="o">=</span> <span class="n">jobids</span> <span class="o">&amp;</span> <span class="n">qrids</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">current</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;Too many jobids found! </span><span class="si">{user}</span><span class="s1"> in project </span><span class="si">{project!r}</span><span class="s1"> is &#39;</span>
+               <span class="s1">&#39;has the folllowing jobids queued or running for </span><span class="si">{name!r}</span><span class="s1">: &#39;</span>
+               <span class="s1">&#39;</span><span class="si">{jobs}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">user</span><span class="o">=</span><span class="n">user</span><span class="p">,</span> <span class="n">project</span><span class="o">=</span><span class="n">project</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">job</span><span class="p">,</span>
+                         <span class="n">jobs</span><span class="o">=</span><span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">current</span><span class="p">)))</span>
+        <span class="k">return</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span>  <span class="n">msg</span>
+    <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">current</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="s1">&#39;No running or queued job found&#39;</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">jobid</span> <span class="o">=</span> <span class="n">jobids</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
+    <span class="c1"># get the job data, if we can find it</span>
+    <span class="n">base</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">jobid</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;.json&#39;</span>
+    <span class="n">status_dirs</span> <span class="o">=</span> <span class="p">[</span><span class="n">ENV</span><span class="p">[</span><span class="s1">&#39;FIXIE_QUEUED_JOBS_DIR&#39;</span><span class="p">],</span> <span class="n">ENV</span><span class="p">[</span><span class="s1">&#39;FIXIE_RUNNING_JOBS_DIR&#39;</span><span class="p">]]</span>
+    <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">status_dirs</span><span class="p">:</span>
+        <span class="n">jobfile</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">base</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">jobfile</span><span class="p">):</span>
+            <span class="c1"># can&#39;t just do a normal read here, since we may be trying to cancel</span>
+            <span class="c1"># a job that hasn&#39;t been fully written yet.</span>
+            <span class="n">s</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">jobfile</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                <span class="k">while</span> <span class="ow">not</span> <span class="n">s</span><span class="p">:</span>
+                    <span class="n">s</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+            <span class="k">break</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="s1">&#39;Job file could not be cound in queue or running.&#39;</span>
+    <span class="c1"># kill the job and transfer job to canceled dir</span>
+    <span class="k">if</span> <span class="n">user</span> <span class="o">!=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;user&#39;</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="n">jobid</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="s1">&#39;User did not start job, cannot cancel it!&#39;</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">kill</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;pid&#39;</span><span class="p">],</span> <span class="n">signal</span><span class="o">.</span><span class="n">SIGTERM</span><span class="p">)</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">jobfile</span><span class="p">)</span>
+    <span class="k">if</span> <span class="s1">&#39;queued_endtime&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+        <span class="n">data</span><span class="p">[</span><span class="s1">&#39;queued_endtime&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+    <span class="k">if</span> <span class="s1">&#39;starttime&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+        <span class="n">data</span><span class="p">[</span><span class="s1">&#39;starttime&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+    <span class="n">data</span><span class="o">.</span><span class="n">update</span><span class="p">({</span>
+        <span class="s1">&#39;returncode&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="s1">&#39;endtime&#39;</span><span class="p">:</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">(),</span>
+        <span class="s1">&#39;out&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="s1">&#39;err&#39;</span><span class="p">:</span> <span class="s1">&#39;Job was canceled externally&#39;</span><span class="p">,</span>
+        <span class="p">})</span>
+    <span class="n">jobfile</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">ENV</span><span class="p">[</span><span class="s1">&#39;FIXIE_CANCELED_JOBS_DIR&#39;</span><span class="p">],</span> <span class="n">base</span><span class="p">)</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">jobfile</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">sort_keys</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">jobid</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="s1">&#39;Job canceled&#39;</span></div>
+
+
+<span class="k">def</span> <span class="nf">_convert_to_statuses_set</span><span class="p">(</span><span class="n">statuses</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Returns a set of valid statuses AND an error message.</span>
+<span class="sd">    On failure, the set of statues will be None.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">statuses</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="n">statuses</span> <span class="o">=</span> <span class="p">{</span><span class="n">statuses</span><span class="p">}</span>
+    <span class="n">s</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">status</span> <span class="ow">in</span> <span class="n">statuses</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">status</span> <span class="o">==</span> <span class="s1">&#39;all&#39;</span><span class="p">:</span>
+            <span class="n">s</span> <span class="o">|=</span> <span class="n">QUEUE_STATUSES</span>
+        <span class="k">elif</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">status</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="s1">&#39;status must be a string, got &#39;</span> <span class="o">+</span> <span class="nb">repr</span><span class="p">(</span><span class="n">status</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">status</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">QUEUE_STATUSES</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="n">status</span> <span class="o">+</span> <span class="s1">&#39; is not a valid status&#39;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">s</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">status</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">s</span><span class="p">,</span> <span class="s1">&#39;&#39;</span>
+
+
+<span class="k">def</span> <span class="nf">_ensure_set_of_str_or_none</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Returns an object that is a set of str or None AND an error message.</span>
+<span class="sd">    On failure, the error message will be non-empty.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">x</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">x</span><span class="p">,</span> <span class="s1">&#39;&#39;</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">set</span><span class="p">([</span><span class="n">x</span><span class="p">]),</span> <span class="s1">&#39;&#39;</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">Set</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">x</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+                <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="s1">&#39;</span><span class="si">{0!r}</span><span class="s1"> is not a string&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">x</span><span class="p">,</span> <span class="s1">&#39;&#39;</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">x</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+                <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="s1">&#39;</span><span class="si">{0!r}</span><span class="s1"> is not a string&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+            <span class="n">y</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">y</span><span class="p">,</span> <span class="s1">&#39;&#39;</span>
+
+
+<span class="k">def</span> <span class="nf">_load_job</span><span class="p">(</span><span class="n">jobid</span><span class="p">,</span> <span class="n">hint</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Loads a job from a jobid and a hint about which status queue it might</span>
+<span class="sd">    be in. Returns a job dict or None (if the job could not be found), and the</span>
+<span class="sd">    status the job was found in.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">t</span> <span class="o">=</span> <span class="s1">&#39;FIXIE_</span><span class="si">{0}</span><span class="s1">_JOBS_DIR&#39;</span>
+    <span class="n">base</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">jobid</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;.json&#39;</span>
+    <span class="c1"># first try the hint</span>
+    <span class="n">jobfile</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">ENV</span><span class="p">[</span><span class="n">t</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">hint</span><span class="o">.</span><span class="n">upper</span><span class="p">())],</span> <span class="n">base</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">jobfile</span><span class="p">):</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">jobfile</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">job</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">job</span><span class="p">,</span> <span class="n">hint</span>
+    <span class="c1"># couldn&#39;t find in the hint, search other statuses.</span>
+    <span class="k">for</span> <span class="n">status</span> <span class="ow">in</span> <span class="n">QUEUE_STATUSES</span><span class="p">:</span>
+        <span class="n">jobfile</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">ENV</span><span class="p">[</span><span class="n">t</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">status</span><span class="o">.</span><span class="n">upper</span><span class="p">())],</span> <span class="n">base</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">jobfile</span><span class="p">):</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">jobfile</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                <span class="n">job</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">job</span><span class="p">,</span> <span class="n">status</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+
+
+<div class="viewcode-block" id="query"><a class="viewcode-back" href="../../api/fixie_batch-simulations.html#fixie_batch.simulations.query">[docs]</a><span class="k">def</span> <span class="nf">query</span><span class="p">(</span><span class="n">statuses</span><span class="o">=</span><span class="s1">&#39;all&#39;</span><span class="p">,</span> <span class="n">users</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">jobs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">projects</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Returns the state of the jobs, filtered as approriate.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    statuses : str or set of str, optional</span>
+<span class="sd">        Which queue statuses we should pull jobs from. If &#39;all&#39;, every status queue is</span>
+<span class="sd">        searched. If a set of str is provided, the statuses are ORed together.</span>
+<span class="sd">    users : str, set of str, or None, optional</span>
+<span class="sd">        User name(s) to filter on. If None, all user names are used. User names</span>
+<span class="sd">        are ORed together, if multiple are provided.</span>
+<span class="sd">    jobs : int, str, set of ints &amp; strs, or None, optional</span>
+<span class="sd">        The jobids and job names to filter on, if provided.  If None, filtering</span>
+<span class="sd">        on job id/name is not done. These are ORed together.</span>
+<span class="sd">    projects : str, set of str, or None, optional</span>
+<span class="sd">        Project names to filer on, if not None. These are ORed together.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    data : list of dicts or None</span>
+<span class="sd">        The list of all jobs found. None if status is False.</span>
+<span class="sd">    status : bool</span>
+<span class="sd">        Whether or not the query was successful.</span>
+<span class="sd">    message : str</span>
+<span class="sd">        Message related to the status of the query</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">users</span><span class="p">,</span> <span class="n">msg</span> <span class="o">=</span> <span class="n">_ensure_set_of_str_or_none</span><span class="p">(</span><span class="n">users</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">msg</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="n">msg</span>
+    <span class="n">projects</span><span class="p">,</span> <span class="n">msg</span> <span class="o">=</span> <span class="n">_ensure_set_of_str_or_none</span><span class="p">(</span><span class="n">projects</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">msg</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="n">msg</span>
+    <span class="c1"># get job ids from statuses</span>
+    <span class="n">statuses</span><span class="p">,</span> <span class="n">msg</span> <span class="o">=</span> <span class="n">_convert_to_statuses_set</span><span class="p">(</span><span class="n">statuses</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">statuses</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="n">msg</span>
+    <span class="n">sids</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>  <span class="c1"># all ids joined together</span>
+    <span class="n">ids_to_status</span> <span class="o">=</span> <span class="p">{}</span>  <span class="c1"># ids mapped to the status found</span>
+    <span class="k">for</span> <span class="n">status</span> <span class="ow">in</span> <span class="n">statuses</span><span class="p">:</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="n">STATUS_IDS</span><span class="p">[</span><span class="n">status</span><span class="p">]()</span>
+        <span class="n">sids</span> <span class="o">|=</span> <span class="n">s</span>
+        <span class="n">ids_to_status</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">i</span><span class="p">:</span> <span class="n">status</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">s</span><span class="p">})</span>
+    <span class="c1"># get job ids from jobs</span>
+    <span class="k">if</span> <span class="n">jobs</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="c1"># since jobs was not provided, we want the maximal set</span>
+        <span class="c1"># this happens to be at most the job ids we have already found</span>
+        <span class="n">jids</span> <span class="o">=</span> <span class="n">sids</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">jobs</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+        <span class="n">jids</span> <span class="o">=</span> <span class="n">jobs</span> <span class="o">=</span> <span class="nb">set</span><span class="p">([</span><span class="n">jobs</span><span class="p">])</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">jobs</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="n">jobs</span> <span class="o">=</span> <span class="nb">set</span><span class="p">([</span><span class="n">jobs</span><span class="p">])</span>
+        <span class="n">jids</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">job</span> <span class="ow">in</span> <span class="n">jobs</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">job</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+                <span class="n">jids</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">job</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">job</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+                <span class="n">jids</span> <span class="o">|=</span> <span class="n">jobids_with_name</span><span class="p">(</span><span class="n">job</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">msg</span> <span class="o">=</span> <span class="s1">&#39;type of job not reconized: </span><span class="si">{0}</span><span class="s1"> </span><span class="si">{1}</span><span class="s1">&#39;</span>
+                <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="n">msg</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">job</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="n">job</span><span class="p">))</span>
+    <span class="c1"># Now load the jobfiles and filter based on user and project</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">jobids</span> <span class="o">=</span> <span class="n">sids</span> <span class="o">&amp;</span> <span class="n">jids</span>
+    <span class="k">for</span> <span class="n">jobid</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">jobids</span><span class="p">):</span>
+        <span class="n">job</span><span class="p">,</span> <span class="n">status</span> <span class="o">=</span> <span class="n">_load_job</span><span class="p">(</span><span class="n">jobid</span><span class="p">,</span> <span class="n">ids_to_status</span><span class="p">[</span><span class="n">jobid</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">job</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">continue</span>
+        <span class="k">if</span> <span class="n">users</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">job</span><span class="p">[</span><span class="s1">&#39;user&#39;</span><span class="p">]</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">users</span><span class="p">:</span>
+            <span class="k">continue</span>
+        <span class="k">if</span> <span class="n">projects</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">job</span><span class="p">[</span><span class="s1">&#39;project&#39;</span><span class="p">]</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">projects</span><span class="p">:</span>
+            <span class="k">continue</span>
+        <span class="n">job</span><span class="p">[</span><span class="s1">&#39;status&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">status</span>
+        <span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">job</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">data</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="s1">&#39;Jobs queried&#39;</span></div>
+
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+        <p class="logo"><a href="../../index.html" title="index">
+          <img class="logo" src="../../_static/fixie-logo.png" alt="Logo"/>
+        </a></p>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+    
+    
+        <div class="sidebar-toggle-group no-js">
+            
+            <button class="sidebar-toggle" id="sidebar-hide" title="Hide the sidebar menu">
+                 «
+                <span class="show-for-small">hide menu</span>
+                
+            </button>
+            <button class="sidebar-toggle" id="sidebar-show" title="Show the sidebar menu">
+                
+                <span class="show-for-small">menu</span>
+                <span class="hide-for-small">sidebar</span>
+                 »
+            </button>
+        </div>
+    
+      <div class="clearer"></div>
+    </div>
+    <div class="relbar-bottom">
+        
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> &nbsp; &nbsp;</li>
+    <li><a href="../../index.html">fixie  documentation</a> &#187;</li>
+
+          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &#187;</li> 
+      </ul>
+    </div>
+    </div>
+
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2018, Anthony Scopatz.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.6.
+    </div>
+    <!-- cloud_sptheme 1.4 -->
+  </body>
+</html>

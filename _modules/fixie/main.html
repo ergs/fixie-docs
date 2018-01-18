@@ -1,0 +1,246 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>fixie.main &#8212; fixie  documentation</title>
+    <link rel="stylesheet" href="../../_static/numpy_friendly.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Noticia+Text|Open+Sans|Droid+Sans+Mono" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../_static/jquery.cookie.js"></script>
+    <script type="text/javascript" src="../../_static/cloud.base.js"></script>
+    <script type="text/javascript" src="../../_static/cloud.js"></script>
+    <link rel="shortcut icon" href="../../_static/fixie-logo.ico"/>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+     
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="canonical" href="http://xon.sh/_modules/fixie/main.html"/>
+
+  </head>
+  <body>
+    <div class="relbar-top">
+        
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> &nbsp; &nbsp;</li>
+    <li><a href="../../index.html">fixie  documentation</a> &#187;</li>
+
+          <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &#187;</li> 
+      </ul>
+    </div>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for fixie.main</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Main function for fixie.&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">argparse</span>
+<span class="kn">import</span> <span class="nn">importlib</span>
+
+<span class="kn">import</span> <span class="nn">tornado.web</span>
+<span class="kn">import</span> <span class="nn">tornado.ioloop</span>
+
+<span class="kn">from</span> <span class="nn">fixie.environ</span> <span class="k">import</span> <span class="n">ENV</span><span class="p">,</span> <span class="n">ENVVARS</span><span class="p">,</span> <span class="n">SERVICES</span><span class="p">,</span> <span class="n">context</span>
+<span class="kn">from</span> <span class="nn">fixie.logger</span> <span class="k">import</span> <span class="n">LOGGER</span>
+
+
+<span class="n">ALL_SERVICES</span> <span class="o">=</span> <span class="n">SERVICES</span> <span class="o">|</span> <span class="nb">frozenset</span><span class="p">([</span><span class="s1">&#39;all&#39;</span><span class="p">])</span>
+
+
+<div class="viewcode-block" id="parse_services"><a class="viewcode-back" href="../../api/fixie-main.html#fixie.main.parse_services">[docs]</a><span class="k">def</span> <span class="nf">parse_services</span><span class="p">(</span><span class="n">args</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Parses out the service names, and returns them as a set.&quot;&quot;&quot;</span>
+    <span class="n">services</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">args</span><span class="p">)</span> <span class="o">&amp;</span> <span class="n">ALL_SERVICES</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">services</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">services</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;all&#39;</span><span class="p">}</span>
+    <span class="k">if</span> <span class="s1">&#39;all&#39;</span> <span class="ow">in</span> <span class="n">services</span><span class="p">:</span>
+        <span class="n">services</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">SERVICES</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">services</span></div>
+
+
+<div class="viewcode-block" id="load_services"><a class="viewcode-back" href="../../api/fixie-main.html#fixie.main.load_services">[docs]</a><span class="k">def</span> <span class="nf">load_services</span><span class="p">(</span><span class="n">services</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Loads the requested services, returns the set actually loaded.&quot;&quot;&quot;</span>
+    <span class="n">loaded</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">service</span> <span class="ow">in</span> <span class="n">services</span><span class="p">:</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;fixie_&#39;</span> <span class="o">+</span> <span class="n">service</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">importlib</span><span class="o">.</span><span class="n">import_module</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+            <span class="n">loaded</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">service</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">ImportError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="s1">&#39;failed to load fixie service: &#39;</span> <span class="o">+</span> <span class="n">name</span>
+    <span class="k">return</span> <span class="n">loaded</span></div>
+
+
+<div class="viewcode-block" id="NotGivenType"><a class="viewcode-back" href="../../api/fixie-main.html#fixie.main.NotGivenType">[docs]</a><span class="k">class</span> <span class="nc">NotGivenType</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Singleton for representing when no value is provided.&quot;&quot;&quot;</span>
+
+    <span class="n">__inst</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">def</span> <span class="nf">__new__</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">NotGivenType</span><span class="o">.</span><span class="n">__inst</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">NotGivenType</span><span class="o">.</span><span class="n">__inst</span> <span class="o">=</span> <span class="nb">object</span><span class="o">.</span><span class="fm">__new__</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">NotGivenType</span><span class="o">.</span><span class="n">__inst</span></div>
+
+
+<span class="n">NotGiven</span> <span class="o">=</span> <span class="n">NotGivenType</span><span class="p">()</span>
+
+
+<div class="viewcode-block" id="make_parser"><a class="viewcode-back" href="../../api/fixie-main.html#fixie.main.make_parser">[docs]</a><span class="k">def</span> <span class="nf">make_parser</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;Makes and argument parser for fixie.&quot;&quot;&quot;</span>
+    <span class="n">p</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">(</span><span class="s1">&#39;fixie&#39;</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s1">&#39;Cyclus-as-a-Service&#39;</span><span class="p">)</span>
+    <span class="n">p</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;-p&#39;</span><span class="p">,</span> <span class="s1">&#39;--port&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">8642</span><span class="p">,</span> <span class="n">dest</span><span class="o">=</span><span class="s1">&#39;port&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span>
+                   <span class="n">help</span><span class="o">=</span><span class="s1">&#39;port to serve the fixie services on.&#39;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="p">(</span><span class="n">default</span><span class="p">,</span> <span class="n">validate</span><span class="p">,</span> <span class="n">convert</span><span class="p">,</span> <span class="n">detype</span><span class="p">,</span> <span class="n">docstr</span><span class="p">)</span> <span class="ow">in</span> <span class="n">ENVVARS</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="n">dest</span> <span class="o">=</span> <span class="n">name</span>
+        <span class="k">if</span> <span class="n">name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;FIXIE_&#39;</span><span class="p">):</span>
+            <span class="n">name</span> <span class="o">=</span> <span class="n">name</span><span class="p">[</span><span class="mi">6</span><span class="p">:]</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;--&#39;</span> <span class="o">+</span> <span class="n">name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">,</span> <span class="s1">&#39;-&#39;</span><span class="p">)</span>
+        <span class="n">p</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="n">NotGiven</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="n">convert</span><span class="p">,</span>
+                       <span class="n">dest</span><span class="o">=</span><span class="n">dest</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="n">docstr</span><span class="p">)</span>
+    <span class="n">p</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;services&#39;</span><span class="p">,</span> <span class="n">nargs</span><span class="o">=</span><span class="s1">&#39;+&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;all&#39;</span><span class="p">],</span>
+                   <span class="n">help</span><span class="o">=</span><span class="s1">&#39;the services to start, may be &quot;all&quot; to specify all &#39;</span>
+                        <span class="s1">&#39;installed services. Default is &quot;all&quot; &#39;</span>
+                        <span class="s1">&#39;Allowed values are: &#39;</span> <span class="o">+</span> <span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="n">ALL_SERVICES</span><span class="p">)))</span>
+    <span class="k">return</span> <span class="n">p</span></div>
+
+
+<div class="viewcode-block" id="set_envvars"><a class="viewcode-back" href="../../api/fixie-main.html#fixie.main.set_envvars">[docs]</a><span class="k">def</span> <span class="nf">set_envvars</span><span class="p">(</span><span class="n">ns</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Sets the environment variables from a namespace.&quot;&quot;&quot;</span>
+    <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">ENVVARS</span><span class="p">:</span>
+        <span class="n">val</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">ns</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">NotGiven</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">val</span> <span class="ow">is</span> <span class="n">NotGiven</span><span class="p">:</span>
+            <span class="nb">delattr</span><span class="p">(</span><span class="n">ns</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+            <span class="k">continue</span>
+        <span class="n">ENV</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span></div>
+
+
+<div class="viewcode-block" id="run_application"><a class="viewcode-back" href="../../api/fixie-main.html#fixie.main.run_application">[docs]</a><span class="k">def</span> <span class="nf">run_application</span><span class="p">(</span><span class="n">ns</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Starts up an application with the loaded services.&quot;&quot;&quot;</span>
+    <span class="c1"># first, find the request handler</span>
+    <span class="n">handlers</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">service</span> <span class="ow">in</span> <span class="n">ns</span><span class="o">.</span><span class="n">services</span><span class="p">:</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;fixie_&#39;</span> <span class="o">+</span> <span class="n">service</span> <span class="o">+</span> <span class="s1">&#39;.handlers&#39;</span>
+        <span class="n">mod</span> <span class="o">=</span> <span class="n">importlib</span><span class="o">.</span><span class="n">import_module</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+        <span class="n">handlers</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">mod</span><span class="o">.</span><span class="n">HANDLERS</span><span class="p">)</span>
+    <span class="c1"># construct the app</span>
+    <span class="n">app</span> <span class="o">=</span> <span class="n">tornado</span><span class="o">.</span><span class="n">web</span><span class="o">.</span><span class="n">Application</span><span class="p">(</span><span class="n">handlers</span><span class="p">)</span>
+    <span class="n">serv</span> <span class="o">=</span> <span class="n">app</span><span class="o">.</span><span class="n">listen</span><span class="p">(</span><span class="n">ns</span><span class="o">.</span><span class="n">port</span><span class="p">)</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="nb">vars</span><span class="p">(</span><span class="n">ns</span><span class="p">)</span>
+    <span class="n">url</span> <span class="o">=</span> <span class="s1">&#39;http://localhost:&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">ns</span><span class="o">.</span><span class="n">port</span><span class="p">)</span>
+    <span class="n">LOGGER</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="s1">&#39;starting fixie &#39;</span> <span class="o">+</span> <span class="n">url</span><span class="p">,</span> <span class="n">category</span><span class="o">=</span><span class="s1">&#39;server&#39;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">tornado</span><span class="o">.</span><span class="n">ioloop</span><span class="o">.</span><span class="n">IOLoop</span><span class="o">.</span><span class="n">current</span><span class="p">()</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+    <span class="k">except</span> <span class="ne">KeyboardInterrupt</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">()</span>
+    <span class="n">LOGGER</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="s1">&#39;stopping fixie &#39;</span> <span class="o">+</span> <span class="n">url</span><span class="p">,</span> <span class="n">category</span><span class="o">=</span><span class="s1">&#39;server&#39;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="main"><a class="viewcode-back" href="../../api/fixie-main.html#fixie.main.main">[docs]</a><span class="k">def</span> <span class="nf">main</span><span class="p">(</span><span class="n">args</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="n">args</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span> <span class="k">if</span> <span class="n">args</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">args</span>
+    <span class="n">services</span> <span class="o">=</span> <span class="n">parse_services</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>
+    <span class="n">services</span> <span class="o">=</span> <span class="n">load_services</span><span class="p">(</span><span class="n">services</span><span class="p">)</span>
+    <span class="k">with</span> <span class="n">context</span><span class="p">():</span>
+        <span class="n">p</span> <span class="o">=</span> <span class="n">make_parser</span><span class="p">()</span>
+        <span class="n">ns</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">parse_args</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>
+        <span class="n">ns</span><span class="o">.</span><span class="n">args</span> <span class="o">=</span> <span class="n">args</span>
+        <span class="n">ns</span><span class="o">.</span><span class="n">services</span> <span class="o">=</span> <span class="n">services</span>
+        <span class="n">set_envvars</span><span class="p">(</span><span class="n">ns</span><span class="p">)</span>
+        <span class="n">run_application</span><span class="p">(</span><span class="n">ns</span><span class="p">)</span></div>
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">main</span><span class="p">()</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+        <p class="logo"><a href="../../index.html" title="index">
+          <img class="logo" src="../../_static/fixie-logo.png" alt="Logo"/>
+        </a></p>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+    
+    
+        <div class="sidebar-toggle-group no-js">
+            
+            <button class="sidebar-toggle" id="sidebar-hide" title="Hide the sidebar menu">
+                 «
+                <span class="show-for-small">hide menu</span>
+                
+            </button>
+            <button class="sidebar-toggle" id="sidebar-show" title="Show the sidebar menu">
+                
+                <span class="show-for-small">menu</span>
+                <span class="hide-for-small">sidebar</span>
+                 »
+            </button>
+        </div>
+    
+      <div class="clearer"></div>
+    </div>
+    <div class="relbar-bottom">
+        
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> &nbsp; &nbsp;</li>
+    <li><a href="../../index.html">fixie  documentation</a> &#187;</li>
+
+          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &#187;</li> 
+      </ul>
+    </div>
+    </div>
+
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2018, Anthony Scopatz.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.6.
+    </div>
+    <!-- cloud_sptheme 1.4 -->
+  </body>
+</html>

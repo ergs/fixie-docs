@@ -1,0 +1,239 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Fixie Command Line Usage &#8212; fixie  documentation</title>
+    <link rel="stylesheet" href="_static/numpy_friendly.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Noticia+Text|Open+Sans|Droid+Sans+Mono" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/jquery.cookie.js"></script>
+    <script type="text/javascript" src="_static/cloud.base.js"></script>
+    <script type="text/javascript" src="_static/cloud.js"></script>
+    <link rel="shortcut icon" href="_static/fixie-logo.ico"/>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Fixie API" href="api/index.html" />
+    <link rel="prev" title="Fixie: Cyclus-as-a-Service" href="index.html" />
+     
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="canonical" href="http://xon.sh/usage.html"/>
+
+  </head>
+  <body>
+    <div class="relbar-top">
+        
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> &nbsp; &nbsp;</li>
+        <li class="right" >
+          <a href="api/index.html" title="Fixie API"
+             accesskey="N">next</a> &nbsp; &nbsp;</li>
+        <li class="right" >
+          <a href="index.html" title="Fixie: Cyclus-as-a-Service"
+             accesskey="P">previous</a> &nbsp; &nbsp;</li>
+    <li><a href="index.html">fixie  documentation</a> &#187;</li>
+ 
+      </ul>
+    </div>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="fixie-command-line-usage">
+<h1>Fixie Command Line Usage<a class="headerlink" href="#fixie-command-line-usage" title="Permalink to this headline">¶</a></h1>
+<p>The fixie command line interface is as follows:</p>
+<div class="highlight-bash"><div class="highlight"><pre><span></span>$ fixie --help
+usage: fixie <span class="o">[</span>-h<span class="o">]</span> <span class="o">[</span>-p PORT<span class="o">]</span> <span class="o">[</span>--config-dir FIXIE_CONFIG_DIR<span class="o">]</span>
+             <span class="o">[</span>--data-dir FIXIE_DATA_DIR<span class="o">]</span> <span class="o">[</span>--jobs-dir FIXIE_JOBS_DIR<span class="o">]</span>
+             <span class="o">[</span>--jobid-file FIXIE_JOBID_FILE<span class="o">]</span>
+             <span class="o">[</span>--job-aliases-file FIXIE_JOB_ALIASES_FILE<span class="o">]</span>
+             <span class="o">[</span>--holding-time FIXIE_HOLDING_TIME<span class="o">]</span> <span class="o">[</span>--njobs FIXIE_NJOBS<span class="o">]</span>
+             <span class="o">[</span>--logfile FIXIE_LOGFILE<span class="o">]</span> <span class="o">[</span>--sims-dir FIXIE_SIMS_DIR<span class="o">]</span>
+             <span class="o">[</span>--paths-dir FIXIE_PATHS_DIR<span class="o">]</span> <span class="o">[</span>--data-url FIXIE_DATA_URL<span class="o">]</span>
+             <span class="o">[</span>--creds-url FIXIE_CREDS_URL<span class="o">]</span> <span class="o">[</span>--batch-url FIXIE_BATCH_URL<span class="o">]</span>
+             <span class="o">[</span>--creds-dir FIXIE_CREDS_DIR<span class="o">]</span>
+             <span class="o">[</span>--running-jobs-dir FIXIE_RUNNING_JOBS_DIR<span class="o">]</span>
+             <span class="o">[</span>--failed-jobs-dir FIXIE_FAILED_JOBS_DIR<span class="o">]</span>
+             <span class="o">[</span>--queued-jobs-dir FIXIE_QUEUED_JOBS_DIR<span class="o">]</span>
+             <span class="o">[</span>--completed-jobs-dir FIXIE_COMPLETED_JOBS_DIR<span class="o">]</span>
+             <span class="o">[</span>--canceled-jobs-dir FIXIE_CANCELED_JOBS_DIR<span class="o">]</span>
+             services <span class="o">[</span>services ...<span class="o">]</span>
+
+Cyclus-as-a-Service
+
+positional arguments:
+  services              the services to start, may be <span class="s2">&quot;all&quot;</span> to specify all
+                        installed services. Default is <span class="s2">&quot;all&quot;</span> Allowed values
+                        are: all, batch, creds, data
+
+optional arguments:
+  -h, --help            show this <span class="nb">help</span> message and <span class="nb">exit</span>
+  -p PORT, --port PORT  port to serve the fixie services on.
+  --config-dir FIXIE_CONFIG_DIR
+                        Path to fixie configuration directory
+  --data-dir FIXIE_DATA_DIR
+                        Path to fixie data directory
+  --jobs-dir FIXIE_JOBS_DIR
+                        Path to fixie <span class="nb">jobs</span> directory
+  --jobid-file FIXIE_JOBID_FILE
+                        Path to the fixie job file, which contains the next
+                        jobid.
+  --job-aliases-file FIXIE_JOB_ALIASES_FILE
+                        Path to the fixie job names file, which contains
+                        aliases associated with users, projects, and jobids.
+  --holding-time FIXIE_HOLDING_TIME
+                        Length of <span class="nb">time</span> to store databases on the server.
+  --njobs FIXIE_NJOBS   Number of <span class="nb">jobs</span> allowed in parallel on this server.
+  --logfile FIXIE_LOGFILE
+                        Path to the fixie logfile.
+  --sims-dir FIXIE_SIMS_DIR
+                        Path to fixie simulations directory, where simulation
+                        objects are stored.
+  --paths-dir FIXIE_PATHS_DIR
+                        Path to fixie paths directory, where database path
+                        metadata is stored.
+  --data-url FIXIE_DATA_URL
+                        Base URL <span class="k">for</span> data service, default is an empty string
+                        indicating service is provided locally <span class="o">(</span><span class="k">if</span> available<span class="o">)</span>.
+  --creds-url FIXIE_CREDS_URL
+                        Base URL <span class="k">for</span> creds service, default is an empty string
+                        indicating service is provided locally <span class="o">(</span><span class="k">if</span> available<span class="o">)</span>.
+  --batch-url FIXIE_BATCH_URL
+                        Base URL <span class="k">for</span> batch service, default is an empty string
+                        indicating service is provided locally <span class="o">(</span><span class="k">if</span> available<span class="o">)</span>.
+  --creds-dir FIXIE_CREDS_DIR
+                        Path to fixie credentials directory
+  --running-jobs-dir FIXIE_RUNNING_JOBS_DIR
+                        Path to fixie running <span class="nb">jobs</span> directory, must be distinct
+                        from other status directories
+  --failed-jobs-dir FIXIE_FAILED_JOBS_DIR
+                        Path to fixie failed <span class="nb">jobs</span> directory, must be distinct
+                        from other status directories
+  --queued-jobs-dir FIXIE_QUEUED_JOBS_DIR
+                        Path to fixie queued <span class="nb">jobs</span> directory, must be distinct
+                        from other status directories
+  --completed-jobs-dir FIXIE_COMPLETED_JOBS_DIR
+                        Path to fixie completed <span class="nb">jobs</span> directory, must be
+                        distinct from other status directories
+  --canceled-jobs-dir FIXIE_CANCELED_JOBS_DIR
+                        Path to fixie canceled <span class="nb">jobs</span> directory, must be
+                        distinct from other status directories
+</pre></div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+        <p class="logo"><a href="index.html" title="index">
+          <img class="logo" src="_static/fixie-logo.png" alt="Logo"/>
+        </a></p>
+  <div class="sphinxprev">
+    <h4>Previous page</h4>
+    <p class="topless"><a href="index.html"
+                          title="Previous page">&larr; Fixie: Cyclus-as-a-Service</a></p>
+  </div>
+  <div class="sphinxnext">
+    <h4>Next page</h4>
+    <p class="topless"><a href="api/index.html"
+                          title="Next page">&rarr; Fixie API</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/usage.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+    
+    
+        <div class="sidebar-toggle-group no-js">
+            
+            <button class="sidebar-toggle" id="sidebar-hide" title="Hide the sidebar menu">
+                 «
+                <span class="show-for-small">hide menu</span>
+                
+            </button>
+            <button class="sidebar-toggle" id="sidebar-show" title="Show the sidebar menu">
+                
+                <span class="show-for-small">menu</span>
+                <span class="hide-for-small">sidebar</span>
+                 »
+            </button>
+        </div>
+    
+      <div class="clearer"></div>
+    </div>
+    <div class="relbar-bottom">
+        
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> &nbsp; &nbsp;</li>
+        <li class="right" >
+          <a href="api/index.html" title="Fixie API"
+             >next</a> &nbsp; &nbsp;</li>
+        <li class="right" >
+          <a href="index.html" title="Fixie: Cyclus-as-a-Service"
+             >previous</a> &nbsp; &nbsp;</li>
+    <li><a href="index.html">fixie  documentation</a> &#187;</li>
+ 
+      </ul>
+    </div>
+    </div>
+
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2018, Anthony Scopatz.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.6.
+    </div>
+    <!-- cloud_sptheme 1.4 -->
+  </body>
+</html>

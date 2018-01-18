@@ -1,0 +1,454 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Data Paths (fixie_data.paths) &#8212; fixie  documentation</title>
+    <link rel="stylesheet" href="../_static/numpy_friendly.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Noticia+Text|Open+Sans|Droid+Sans+Mono" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/jquery.cookie.js"></script>
+    <script type="text/javascript" src="../_static/cloud.base.js"></script>
+    <script type="text/javascript" src="../_static/cloud.js"></script>
+    <link rel="shortcut icon" href="../_static/fixie-logo.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Data Request Handlers (fixie_data.handlers)" href="fixie_data-handlers.html" />
+    <link rel="prev" title="Batch Request Handlers (fixie_batch.handlers)" href="fixie_batch-handlers.html" />
+     
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="canonical" href="http://xon.sh/api/fixie_data-paths.html"/>
+
+  </head>
+  <body>
+    <div class="relbar-top">
+        
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> &nbsp; &nbsp;</li>
+        <li class="right" >
+          <a href="fixie_data-handlers.html" title="Data Request Handlers (fixie_data.handlers)"
+             accesskey="N">next</a> &nbsp; &nbsp;</li>
+        <li class="right" >
+          <a href="fixie_batch-handlers.html" title="Batch Request Handlers (fixie_batch.handlers)"
+             accesskey="P">previous</a> &nbsp; &nbsp;</li>
+    <li><a href="../index.html">fixie  documentation</a> &#187;</li>
+
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">Fixie API</a> &#187;</li> 
+      </ul>
+    </div>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-fixie_data.paths">
+<span id="data-paths-fixie-data-paths"></span><span id="fixie-data-paths"></span><h1>Data Paths (<code class="docutils literal"><span class="pre">fixie_data.paths</span></code>)<a class="headerlink" href="#module-fixie_data.paths" title="Permalink to this headline">¶</a></h1>
+<p>Manages paths for fixie data service.</p>
+<dl class="function">
+<dt id="fixie_data.paths.delete">
+<code class="descclassname">fixie_data.paths.</code><code class="descname">delete</code><span class="sig-paren">(</span><em>path</em>, <em>user</em>, <em>token</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fixie_data/paths.html#delete"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fixie_data.paths.delete" title="Permalink to this definition">¶</a></dt>
+<dd><p>Removes a path (and its file) from the server.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>path</strong> : str</p>
+<blockquote>
+<div><p>Path to remove.</p>
+</div></blockquote>
+<p><strong>user</strong> : str</p>
+<blockquote>
+<div><p>Name of user to remove path for.</p>
+</div></blockquote>
+<p><strong>token</strong> : str</p>
+<blockquote>
+<div><p>Token for a user.</p>
+</div></blockquote>
+<p><strong>kwargs</strong> : other key words</p>
+<blockquote>
+<div><p>Passed into <code class="docutils literal"><span class="pre">fixie.flock()</span></code> when loading user paths file.</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>status</strong> : bool</p>
+<blockquote>
+<div><p>Whether the path can be fetched.</p>
+</div></blockquote>
+<p><strong>message</strong> : str</p>
+<blockquote class="last">
+<div><p>Status message, if needed.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="fixie_data.paths.fetch">
+<code class="descclassname">fixie_data.paths.</code><code class="descname">fetch</code><span class="sig-paren">(</span><em>path</em>, <em>user</em>, <em>token</em>, <em>url=True</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fixie_data/paths.html#fetch"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fixie_data.paths.fetch" title="Permalink to this definition">¶</a></dt>
+<dd><p>Retrieves a path from the server.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>path</strong> : str</p>
+<blockquote>
+<div><p>Path to retrieve.</p>
+</div></blockquote>
+<p><strong>user</strong> : str</p>
+<blockquote>
+<div><p>Name of user to fetch a file for.</p>
+</div></blockquote>
+<p><strong>token</strong> : str</p>
+<blockquote>
+<div><p>Token for a user.</p>
+</div></blockquote>
+<p><strong>url</strong> : boolean, optional</p>
+<blockquote>
+<div><p>Whether to return a URL from which the file can be downloaded, or
+the bytes of the file itself.</p>
+</div></blockquote>
+<p><strong>kwargs</strong> : other key words</p>
+<blockquote>
+<div><p>Passed into <code class="docutils literal"><span class="pre">fixie.flock()</span></code> when loading user paths file.</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>url_or_file</strong> : str, bytes, or None</p>
+<blockquote>
+<div><p>URL (relative to the server base) where the file may be downloaded (via GET),
+or the bytes of the file, or None if the status is False/</p>
+</div></blockquote>
+<p><strong>status</strong> : bool</p>
+<blockquote>
+<div><p>Whether the path can be fetched.</p>
+</div></blockquote>
+<p><strong>message</strong> : str</p>
+<blockquote class="last">
+<div><p>Status message, if needed.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="fixie_data.paths.gc">
+<code class="descclassname">fixie_data.paths.</code><code class="descname">gc</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fixie_data/paths.html#gc"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fixie_data.paths.gc" title="Permalink to this definition">¶</a></dt>
+<dd><p>Cleans up paths &amp; files that have past their holding time.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>kwargs</strong> : other key words</p>
+<blockquote>
+<div><p>Passed into <code class="docutils literal"><span class="pre">fixie.flock()</span></code> when loading user paths file.</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>status</strong> : bool</p>
+<blockquote>
+<div><p>Whether garbage collection completed.</p>
+</div></blockquote>
+<p><strong>message</strong> : str</p>
+<blockquote class="last">
+<div><p>Status message, if needed.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="fixie_data.paths.info">
+<code class="descclassname">fixie_data.paths.</code><code class="descname">info</code><span class="sig-paren">(</span><em>user</em>, <em>token</em>, <em>paths=None</em>, <em>pattern=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fixie_data/paths.html#info"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fixie_data.paths.info" title="Permalink to this definition">¶</a></dt>
+<dd><p>Retrieves metadata information for paths.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>user</strong> : str</p>
+<blockquote>
+<div><p>Name of user to list paths for.</p>
+</div></blockquote>
+<p><strong>token</strong> : str</p>
+<blockquote>
+<div><p>Token for a user.</p>
+</div></blockquote>
+<p><strong>paths</strong> : str or list of str or None, optional</p>
+<blockquote>
+<div><p>Only return info for specific paths. If non-empty, pattern must be empty.</p>
+</div></blockquote>
+<p><strong>pattern</strong> : str or None, optional</p>
+<blockquote>
+<div><p>Glob string to match paths. If None or an empty string, all
+paths are returned. If non-empty, paths must be empty.</p>
+</div></blockquote>
+<p><strong>kwargs</strong> : other key words</p>
+<blockquote>
+<div><p>Passed into <code class="docutils literal"><span class="pre">fixie.flock()</span></code> when loading user paths file.</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>infos</strong> : list of dicts or None</p>
+<blockquote>
+<div><p>Path infomation dicts. None if status is False.</p>
+</div></blockquote>
+<p><strong>status</strong> : bool</p>
+<blockquote>
+<div><p>Whether the paths were correctly found.</p>
+</div></blockquote>
+<p><strong>message</strong> : str</p>
+<blockquote class="last">
+<div><p>Status message, if needed.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="fixie_data.paths.listpaths">
+<code class="descclassname">fixie_data.paths.</code><code class="descname">listpaths</code><span class="sig-paren">(</span><em>user</em>, <em>token</em>, <em>pattern=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fixie_data/paths.html#listpaths"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fixie_data.paths.listpaths" title="Permalink to this definition">¶</a></dt>
+<dd><p>Lists paths for a user, matching a glob pattern if provided.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>user</strong> : str</p>
+<blockquote>
+<div><p>Name of user to list paths for.</p>
+</div></blockquote>
+<p><strong>token</strong> : str</p>
+<blockquote>
+<div><p>Token for a user.</p>
+</div></blockquote>
+<p><strong>pattern</strong> : str or None, optional</p>
+<blockquote>
+<div><p>Glob string to match paths. If None or an empty string, all
+paths are returned.</p>
+</div></blockquote>
+<p><strong>kwargs</strong> : other key words</p>
+<blockquote>
+<div><p>Passed into <code class="docutils literal"><span class="pre">fixie.flock()</span></code> when loading user paths file.</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>paths</strong> : list of str or None</p>
+<blockquote>
+<div><p>Path names that matched the given pattern. None if status is False.</p>
+</div></blockquote>
+<p><strong>status</strong> : bool</p>
+<blockquote>
+<div><p>Whether the paths were correctly found.</p>
+</div></blockquote>
+<p><strong>message</strong> : str</p>
+<blockquote class="last">
+<div><p>Status message, if needed.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="fixie_data.paths.resolve_pending_paths">
+<code class="descclassname">fixie_data.paths.</code><code class="descname">resolve_pending_paths</code><span class="sig-paren">(</span><em>user</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fixie_data/paths.html#resolve_pending_paths"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fixie_data.paths.resolve_pending_paths" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function searches for any pending path files for a user and then adds
+their information into the users path file (<code class="docutils literal"><span class="pre">$FIXIE_PATHS_DIR/user.json</span></code>).
+This will return the contents of the paths file
+after the update. Pending path files must be names to match the glob:
+<code class="docutils literal"><span class="pre">$FIXIE_PATHS_DIR/username*-pending-path.json</span></code>. Additional keyword arguments
+are passed into <code class="docutils literal"><span class="pre">fixie.flock()</span></code>. Returns None if the user paths file could
+not be loaded.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="fixie_data.paths.table">
+<code class="descclassname">fixie_data.paths.</code><code class="descname">table</code><span class="sig-paren">(</span><em>name</em>, <em>path</em>, <em>user</em>, <em>token</em>, <em>conds=None</em>, <em>format='dataframe'</em>, <em>orient='columns'</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fixie_data/paths.html#table"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fixie_data.paths.table" title="Permalink to this definition">¶</a></dt>
+<dd><p>Retrieves a table from a path (which must represent a Cyclus database).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>name</strong> : str</p>
+<blockquote>
+<div><p>Name of table to retrieve.</p>
+</div></blockquote>
+<p><strong>path</strong> : str</p>
+<blockquote>
+<div><p>Path to remove.</p>
+</div></blockquote>
+<p><strong>user</strong> : str</p>
+<blockquote>
+<div><p>Name of user to remove path for.</p>
+</div></blockquote>
+<p><strong>token</strong> : str</p>
+<blockquote>
+<div><p>Token for a user.</p>
+</div></blockquote>
+<p><strong>conds</strong> : list of 3-tuples or None, optional</p>
+<blockquote>
+<div><p>Conditions to filter table rows with. See the Cyclus FullBackend for
+more information.  The default (None) is to provide the complete
+table.</p>
+</div></blockquote>
+<p><strong>format</strong> : str, optional</p>
+<blockquote>
+<div><p>Flag for type of object to return. If “dataframe” (default), a pandas
+DataFrame will be returned. If “json:dict”, a Python dict that
+is JSON serializable (via <code class="docutils literal"><span class="pre">fixie.json</span></code>) will be returned. If “json” or
+“json:str” a JSON string will be returned.</p>
+</div></blockquote>
+<p><strong>orient</strong> : str, optional</p>
+<blockquote>
+<div><p>Flag for orientation that is passed into <code class="docutils literal"><span class="pre">pandas.DataFrame.to_json()</span></code>
+See this method for more documentation.</p>
+</div></blockquote>
+<p><strong>kwargs</strong> : other key words</p>
+<blockquote>
+<div><p>Passed into <code class="docutils literal"><span class="pre">fixie.flock()</span></code> when loading user paths file.</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>table</strong> : pandas.DataFrame or dict str or None</p>
+<blockquote>
+<div><p>The contents of the table, structure depends on format and orient
+kwargs. None if table could not be loaded</p>
+</div></blockquote>
+<p><strong>status</strong> : bool</p>
+<blockquote>
+<div><p>Whether the table could be loaded.</p>
+</div></blockquote>
+<p><strong>message</strong> : str</p>
+<blockquote class="last">
+<div><p>Status message, if needed.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+        <p class="logo"><a href="../index.html" title="index">
+          <img class="logo" src="../_static/fixie-logo.png" alt="Logo"/>
+        </a></p>
+  <div class="sphinxprev">
+    <h4>Previous page</h4>
+    <p class="topless"><a href="fixie_batch-handlers.html"
+                          title="Previous page">&larr; Batch Request Handlers (<code class="docutils literal"><span class="pre">fixie_batch.handlers</span></code>)</a></p>
+  </div>
+  <div class="sphinxnext">
+    <h4>Next page</h4>
+    <p class="topless"><a href="fixie_data-handlers.html"
+                          title="Next page">&rarr; Data Request Handlers (<code class="docutils literal"><span class="pre">fixie_data.handlers</span></code>)</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/api/fixie_data-paths.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+    
+    
+        <div class="sidebar-toggle-group no-js">
+            
+            <button class="sidebar-toggle" id="sidebar-hide" title="Hide the sidebar menu">
+                 «
+                <span class="show-for-small">hide menu</span>
+                
+            </button>
+            <button class="sidebar-toggle" id="sidebar-show" title="Show the sidebar menu">
+                
+                <span class="show-for-small">menu</span>
+                <span class="hide-for-small">sidebar</span>
+                 »
+            </button>
+        </div>
+    
+      <div class="clearer"></div>
+    </div>
+    <div class="relbar-bottom">
+        
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> &nbsp; &nbsp;</li>
+        <li class="right" >
+          <a href="fixie_data-handlers.html" title="Data Request Handlers (fixie_data.handlers)"
+             >next</a> &nbsp; &nbsp;</li>
+        <li class="right" >
+          <a href="fixie_batch-handlers.html" title="Batch Request Handlers (fixie_batch.handlers)"
+             >previous</a> &nbsp; &nbsp;</li>
+    <li><a href="../index.html">fixie  documentation</a> &#187;</li>
+
+          <li class="nav-item nav-item-1"><a href="index.html" >Fixie API</a> &#187;</li> 
+      </ul>
+    </div>
+    </div>
+
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2018, Anthony Scopatz.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.6.
+    </div>
+    <!-- cloud_sptheme 1.4 -->
+  </body>
+</html>

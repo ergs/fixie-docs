@@ -1,0 +1,233 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Credentials Request Handlers (fixie_creds.handlers) &#8212; fixie  documentation</title>
+    <link rel="stylesheet" href="../_static/numpy_friendly.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Noticia+Text|Open+Sans|Droid+Sans+Mono" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/jquery.cookie.js"></script>
+    <script type="text/javascript" src="../_static/cloud.base.js"></script>
+    <script type="text/javascript" src="../_static/cloud.js"></script>
+    <link rel="shortcut icon" href="../_static/fixie-logo.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Batch Simulation Execution &amp; Management (fixie_batch.simulations)" href="fixie_batch-simulations.html" />
+    <link rel="prev" title="Credentials Environment (fixie_creds.environ)" href="fixie_creds-environ.html" />
+     
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="canonical" href="http://xon.sh/api/fixie_creds-handlers.html"/>
+
+  </head>
+  <body>
+    <div class="relbar-top">
+        
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> &nbsp; &nbsp;</li>
+        <li class="right" >
+          <a href="fixie_batch-simulations.html" title="Batch Simulation Execution &amp; Management (fixie_batch.simulations)"
+             accesskey="N">next</a> &nbsp; &nbsp;</li>
+        <li class="right" >
+          <a href="fixie_creds-environ.html" title="Credentials Environment (fixie_creds.environ)"
+             accesskey="P">previous</a> &nbsp; &nbsp;</li>
+    <li><a href="../index.html">fixie  documentation</a> &#187;</li>
+
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">Fixie API</a> &#187;</li> 
+      </ul>
+    </div>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-fixie_creds.handlers">
+<span id="credentials-request-handlers-fixie-creds-handlers"></span><span id="fixie-creds-handlers"></span><h1>Credentials Request Handlers (<code class="docutils literal"><span class="pre">fixie_creds.handlers</span></code>)<a class="headerlink" href="#module-fixie_creds.handlers" title="Permalink to this headline">¶</a></h1>
+<p>Tornado handlers for interfacing with fixie credentials.</p>
+<dl class="class">
+<dt id="fixie_creds.handlers.Deregister">
+<em class="property">class </em><code class="descclassname">fixie_creds.handlers.</code><code class="descname">Deregister</code><span class="sig-paren">(</span><em>application</em>, <em>request</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fixie_creds/handlers.html#Deregister"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fixie_creds.handlers.Deregister" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="fixie_creds.handlers.Deregister.post">
+<code class="descname">post</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fixie_creds/handlers.html#Deregister.post"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fixie_creds.handlers.Deregister.post" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="fixie_creds.handlers.Deregister.response_keys">
+<code class="descname">response_keys</code><em class="property"> = ('message', 'status')</em><a class="headerlink" href="#fixie_creds.handlers.Deregister.response_keys" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="fixie_creds.handlers.Deregister.schema">
+<code class="descname">schema</code><em class="property"> = {'token': {'type': 'string', 'regex': '[0-9a-fA-F]+'}, 'user': {'type': 'string', 'empty': False}}</em><a class="headerlink" href="#fixie_creds.handlers.Deregister.schema" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="fixie_creds.handlers.Register">
+<em class="property">class </em><code class="descclassname">fixie_creds.handlers.</code><code class="descname">Register</code><span class="sig-paren">(</span><em>application</em>, <em>request</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fixie_creds/handlers.html#Register"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fixie_creds.handlers.Register" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="fixie_creds.handlers.Register.post">
+<code class="descname">post</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fixie_creds/handlers.html#Register.post"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fixie_creds.handlers.Register.post" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="fixie_creds.handlers.Register.schema">
+<code class="descname">schema</code><em class="property"> = {'email': {'type': 'string', 'empty': False}, 'user': {'type': 'string', 'empty': False}}</em><a class="headerlink" href="#fixie_creds.handlers.Register.schema" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="fixie_creds.handlers.Reset">
+<em class="property">class </em><code class="descclassname">fixie_creds.handlers.</code><code class="descname">Reset</code><span class="sig-paren">(</span><em>application</em>, <em>request</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fixie_creds/handlers.html#Reset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fixie_creds.handlers.Reset" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="fixie_creds.handlers.Reset.post">
+<code class="descname">post</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fixie_creds/handlers.html#Reset.post"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fixie_creds.handlers.Reset.post" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="fixie_creds.handlers.Reset.schema">
+<code class="descname">schema</code><em class="property"> = {'email': {'type': 'string', 'empty': False}, 'user': {'type': 'string', 'empty': False}}</em><a class="headerlink" href="#fixie_creds.handlers.Reset.schema" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="fixie_creds.handlers.Verify">
+<em class="property">class </em><code class="descclassname">fixie_creds.handlers.</code><code class="descname">Verify</code><span class="sig-paren">(</span><em>application</em>, <em>request</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fixie_creds/handlers.html#Verify"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fixie_creds.handlers.Verify" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="fixie_creds.handlers.Verify.post">
+<code class="descname">post</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fixie_creds/handlers.html#Verify.post"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fixie_creds.handlers.Verify.post" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="fixie_creds.handlers.Verify.response_keys">
+<code class="descname">response_keys</code><em class="property"> = ('verified', 'message', 'status')</em><a class="headerlink" href="#fixie_creds.handlers.Verify.response_keys" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="fixie_creds.handlers.Verify.schema">
+<code class="descname">schema</code><em class="property"> = {'token': {'type': 'string', 'regex': '[0-9a-fA-F]+'}, 'user': {'type': 'string', 'empty': False}}</em><a class="headerlink" href="#fixie_creds.handlers.Verify.schema" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+        <p class="logo"><a href="../index.html" title="index">
+          <img class="logo" src="../_static/fixie-logo.png" alt="Logo"/>
+        </a></p>
+  <div class="sphinxprev">
+    <h4>Previous page</h4>
+    <p class="topless"><a href="fixie_creds-environ.html"
+                          title="Previous page">&larr; Credentials Environment (<code class="docutils literal"><span class="pre">fixie_creds.environ</span></code>)</a></p>
+  </div>
+  <div class="sphinxnext">
+    <h4>Next page</h4>
+    <p class="topless"><a href="fixie_batch-simulations.html"
+                          title="Next page">&rarr; Batch Simulation Execution &amp; Management (<code class="docutils literal"><span class="pre">fixie_batch.simulations</span></code>)</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/api/fixie_creds-handlers.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+    
+    
+        <div class="sidebar-toggle-group no-js">
+            
+            <button class="sidebar-toggle" id="sidebar-hide" title="Hide the sidebar menu">
+                 «
+                <span class="show-for-small">hide menu</span>
+                
+            </button>
+            <button class="sidebar-toggle" id="sidebar-show" title="Show the sidebar menu">
+                
+                <span class="show-for-small">menu</span>
+                <span class="hide-for-small">sidebar</span>
+                 »
+            </button>
+        </div>
+    
+      <div class="clearer"></div>
+    </div>
+    <div class="relbar-bottom">
+        
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> &nbsp; &nbsp;</li>
+        <li class="right" >
+          <a href="fixie_batch-simulations.html" title="Batch Simulation Execution &amp; Management (fixie_batch.simulations)"
+             >next</a> &nbsp; &nbsp;</li>
+        <li class="right" >
+          <a href="fixie_creds-environ.html" title="Credentials Environment (fixie_creds.environ)"
+             >previous</a> &nbsp; &nbsp;</li>
+    <li><a href="../index.html">fixie  documentation</a> &#187;</li>
+
+          <li class="nav-item nav-item-1"><a href="index.html" >Fixie API</a> &#187;</li> 
+      </ul>
+    </div>
+    </div>
+
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2018, Anthony Scopatz.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.6.
+    </div>
+    <!-- cloud_sptheme 1.4 -->
+  </body>
+</html>

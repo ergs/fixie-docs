@@ -1,0 +1,222 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>JSON Utilities (fixie.jsonutils) &#8212; fixie  documentation</title>
+    <link rel="stylesheet" href="../_static/numpy_friendly.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Noticia+Text|Open+Sans|Droid+Sans+Mono" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/jquery.cookie.js"></script>
+    <script type="text/javascript" src="../_static/cloud.base.js"></script>
+    <script type="text/javascript" src="../_static/cloud.js"></script>
+    <link rel="shortcut icon" href="../_static/fixie-logo.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Credentials Cache (fixie_creds.cache)" href="fixie_creds-cache.html" />
+    <link rel="prev" title="General Purpose Fixie Tools (fixie.tools)" href="fixie-tools.html" />
+     
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="canonical" href="http://xon.sh/api/fixie-jsonutils.html"/>
+
+  </head>
+  <body>
+    <div class="relbar-top">
+        
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> &nbsp; &nbsp;</li>
+        <li class="right" >
+          <a href="fixie_creds-cache.html" title="Credentials Cache (fixie_creds.cache)"
+             accesskey="N">next</a> &nbsp; &nbsp;</li>
+        <li class="right" >
+          <a href="fixie-tools.html" title="General Purpose Fixie Tools (fixie.tools)"
+             accesskey="P">previous</a> &nbsp; &nbsp;</li>
+    <li><a href="../index.html">fixie  documentation</a> &#187;</li>
+
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">Fixie API</a> &#187;</li> 
+      </ul>
+    </div>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-fixie.jsonutils">
+<span id="json-utilities-fixie-jsonutils"></span><span id="fixie-jsonutils"></span><h1>JSON Utilities (<code class="docutils literal"><span class="pre">fixie.jsonutils</span></code>)<a class="headerlink" href="#module-fixie.jsonutils" title="Permalink to this headline">¶</a></h1>
+<p>Standard fixie tools for dealing with JSON.</p>
+<dl class="function">
+<dt id="fixie.jsonutils.appendline">
+<code class="descclassname">fixie.jsonutils.</code><code class="descname">appendline</code><span class="sig-paren">(</span><em>obj</em>, <em>f</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fixie/jsonutils.html#appendline"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fixie.jsonutils.appendline" title="Permalink to this definition">¶</a></dt>
+<dd><p>Appends a line to a line-oriented JSON file (either str path or file handle).</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="fixie.jsonutils.decode">
+<code class="descclassname">fixie.jsonutils.</code><code class="descname">decode</code><span class="sig-paren">(</span><em>s</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fixie/jsonutils.html#decode"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fixie.jsonutils.decode" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="fixie.jsonutils.default">
+<code class="descclassname">fixie.jsonutils.</code><code class="descname">default</code><span class="sig-paren">(</span><em>obj</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fixie/jsonutils.html#default"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fixie.jsonutils.default" title="Permalink to this definition">¶</a></dt>
+<dd><p>For custom object serialization.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="fixie.jsonutils.dump">
+<code class="descclassname">fixie.jsonutils.</code><code class="descname">dump</code><span class="sig-paren">(</span><em>obj</em>, <em>fp</em>, <em>sort_keys=True</em>, <em>separators=('</em>, <em>'</em>, <em>':')</em>, <em>default=&lt;function default&gt;</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fixie/jsonutils.html#dump"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fixie.jsonutils.dump" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a JSON string from a Python object.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="fixie.jsonutils.dumps">
+<code class="descclassname">fixie.jsonutils.</code><code class="descname">dumps</code><span class="sig-paren">(</span><em>obj</em>, <em>sort_keys=True</em>, <em>separators=('</em>, <em>'</em>, <em>':')</em>, <em>default=&lt;function default&gt;</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fixie/jsonutils.html#dumps"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fixie.jsonutils.dumps" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a JSON string from a Python object.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="fixie.jsonutils.encode">
+<code class="descclassname">fixie.jsonutils.</code><code class="descname">encode</code><span class="sig-paren">(</span><em>obj</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fixie/jsonutils.html#encode"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fixie.jsonutils.encode" title="Permalink to this definition">¶</a></dt>
+<dd><p>Encodes JSON with forward slash encoding, such as in Tornado.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="fixie.jsonutils.load">
+<code class="descclassname">fixie.jsonutils.</code><code class="descname">load</code><span class="sig-paren">(</span><em>fp</em>, <em>object_hook=&lt;function object_hook&gt;</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fixie/jsonutils.html#load"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fixie.jsonutils.load" title="Permalink to this definition">¶</a></dt>
+<dd><p>Loads a file object as JSON, with appropriate object hooks.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="fixie.jsonutils.loadlines">
+<code class="descclassname">fixie.jsonutils.</code><code class="descname">loadlines</code><span class="sig-paren">(</span><em>f</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fixie/jsonutils.html#loadlines"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fixie.jsonutils.loadlines" title="Permalink to this definition">¶</a></dt>
+<dd><p>Loads lines from a file (either str path of file handle).</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="fixie.jsonutils.loads">
+<code class="descclassname">fixie.jsonutils.</code><code class="descname">loads</code><span class="sig-paren">(</span><em>s</em>, <em>object_hook=&lt;function object_hook&gt;</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fixie/jsonutils.html#loads"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fixie.jsonutils.loads" title="Permalink to this definition">¶</a></dt>
+<dd><p>Loads a string as JSON, with approriate object hooks</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="fixie.jsonutils.object_hook">
+<code class="descclassname">fixie.jsonutils.</code><code class="descname">object_hook</code><span class="sig-paren">(</span><em>dct</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fixie/jsonutils.html#object_hook"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fixie.jsonutils.object_hook" title="Permalink to this definition">¶</a></dt>
+<dd><p>For custom object deserialization.</p>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+        <p class="logo"><a href="../index.html" title="index">
+          <img class="logo" src="../_static/fixie-logo.png" alt="Logo"/>
+        </a></p>
+  <div class="sphinxprev">
+    <h4>Previous page</h4>
+    <p class="topless"><a href="fixie-tools.html"
+                          title="Previous page">&larr; General Purpose Fixie Tools (<code class="docutils literal"><span class="pre">fixie.tools</span></code>)</a></p>
+  </div>
+  <div class="sphinxnext">
+    <h4>Next page</h4>
+    <p class="topless"><a href="fixie_creds-cache.html"
+                          title="Next page">&rarr; Credentials Cache (<code class="docutils literal"><span class="pre">fixie_creds.cache</span></code>)</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/api/fixie-jsonutils.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+    
+    
+        <div class="sidebar-toggle-group no-js">
+            
+            <button class="sidebar-toggle" id="sidebar-hide" title="Hide the sidebar menu">
+                 «
+                <span class="show-for-small">hide menu</span>
+                
+            </button>
+            <button class="sidebar-toggle" id="sidebar-show" title="Show the sidebar menu">
+                
+                <span class="show-for-small">menu</span>
+                <span class="hide-for-small">sidebar</span>
+                 »
+            </button>
+        </div>
+    
+      <div class="clearer"></div>
+    </div>
+    <div class="relbar-bottom">
+        
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> &nbsp; &nbsp;</li>
+        <li class="right" >
+          <a href="fixie_creds-cache.html" title="Credentials Cache (fixie_creds.cache)"
+             >next</a> &nbsp; &nbsp;</li>
+        <li class="right" >
+          <a href="fixie-tools.html" title="General Purpose Fixie Tools (fixie.tools)"
+             >previous</a> &nbsp; &nbsp;</li>
+    <li><a href="../index.html">fixie  documentation</a> &#187;</li>
+
+          <li class="nav-item nav-item-1"><a href="index.html" >Fixie API</a> &#187;</li> 
+      </ul>
+    </div>
+    </div>
+
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2018, Anthony Scopatz.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.6.
+    </div>
+    <!-- cloud_sptheme 1.4 -->
+  </body>
+</html>

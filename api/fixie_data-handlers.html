@@ -1,0 +1,294 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Data Request Handlers (fixie_data.handlers) &#8212; fixie  documentation</title>
+    <link rel="stylesheet" href="../_static/numpy_friendly.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Noticia+Text|Open+Sans|Droid+Sans+Mono" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/jquery.cookie.js"></script>
+    <script type="text/javascript" src="../_static/cloud.base.js"></script>
+    <script type="text/javascript" src="../_static/cloud.js"></script>
+    <link rel="shortcut icon" href="../_static/fixie-logo.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Developer’s Guide" href="../devguide.html" />
+    <link rel="prev" title="Data Paths (fixie_data.paths)" href="fixie_data-paths.html" />
+     
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="canonical" href="http://xon.sh/api/fixie_data-handlers.html"/>
+
+  </head>
+  <body>
+    <div class="relbar-top">
+        
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> &nbsp; &nbsp;</li>
+        <li class="right" >
+          <a href="../devguide.html" title="Developer’s Guide"
+             accesskey="N">next</a> &nbsp; &nbsp;</li>
+        <li class="right" >
+          <a href="fixie_data-paths.html" title="Data Paths (fixie_data.paths)"
+             accesskey="P">previous</a> &nbsp; &nbsp;</li>
+    <li><a href="../index.html">fixie  documentation</a> &#187;</li>
+
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">Fixie API</a> &#187;</li> 
+      </ul>
+    </div>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-fixie_data.handlers">
+<span id="data-request-handlers-fixie-data-handlers"></span><span id="fixie-data-handlers"></span><h1>Data Request Handlers (<code class="docutils literal"><span class="pre">fixie_data.handlers</span></code>)<a class="headerlink" href="#module-fixie_data.handlers" title="Permalink to this headline">¶</a></h1>
+<p>Tornado handlers for interfacing with fixie data management.</p>
+<dl class="class">
+<dt id="fixie_data.handlers.Delete">
+<em class="property">class </em><code class="descclassname">fixie_data.handlers.</code><code class="descname">Delete</code><span class="sig-paren">(</span><em>application</em>, <em>request</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fixie_data/handlers.html#Delete"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fixie_data.handlers.Delete" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="fixie_data.handlers.Delete.post">
+<code class="descname">post</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fixie_data/handlers.html#Delete.post"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fixie_data.handlers.Delete.post" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="fixie_data.handlers.Delete.response_keys">
+<code class="descname">response_keys</code><em class="property"> = ('status', 'message')</em><a class="headerlink" href="#fixie_data.handlers.Delete.response_keys" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="fixie_data.handlers.Delete.schema">
+<code class="descname">schema</code><em class="property"> = {'path': {'type': 'string', 'empty': False, 'required': True}, 'token': {'type': 'string', 'regex': '[0-9a-fA-F]+', 'required': True}, 'user': {'type': 'string', 'empty': False, 'required': True}}</em><a class="headerlink" href="#fixie_data.handlers.Delete.schema" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="fixie_data.handlers.Fetch">
+<em class="property">class </em><code class="descclassname">fixie_data.handlers.</code><code class="descname">Fetch</code><span class="sig-paren">(</span><em>application</em>, <em>request</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fixie_data/handlers.html#Fetch"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fixie_data.handlers.Fetch" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="fixie_data.handlers.Fetch.get">
+<code class="descname">get</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fixie_data/handlers.html#Fetch.get"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fixie_data.handlers.Fetch.get" title="Permalink to this definition">¶</a></dt>
+<dd><p>Actually get a file</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fixie_data.handlers.Fetch.post">
+<code class="descname">post</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fixie_data/handlers.html#Fetch.post"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fixie_data.handlers.Fetch.post" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="fixie_data.handlers.Fetch.chunksize">
+<code class="descname">chunksize</code><em class="property"> = 16384</em><a class="headerlink" href="#fixie_data.handlers.Fetch.chunksize" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="fixie_data.handlers.Fetch.response_keys">
+<code class="descname">response_keys</code><em class="property"> = ('file', 'status', 'message')</em><a class="headerlink" href="#fixie_data.handlers.Fetch.response_keys" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="fixie_data.handlers.Fetch.schema">
+<code class="descname">schema</code><em class="property"> = {'path': {'type': 'string', 'empty': False, 'required': True}, 'token': {'type': 'string', 'regex': '[0-9a-fA-F]+', 'required': True}, 'url': {'type': 'boolean'}, 'user': {'type': 'string', 'empty': False, 'required': True}}</em><a class="headerlink" href="#fixie_data.handlers.Fetch.schema" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="fixie_data.handlers.GC">
+<em class="property">class </em><code class="descclassname">fixie_data.handlers.</code><code class="descname">GC</code><span class="sig-paren">(</span><em>application</em>, <em>request</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fixie_data/handlers.html#GC"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fixie_data.handlers.GC" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="fixie_data.handlers.GC.post">
+<code class="descname">post</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fixie_data/handlers.html#GC.post"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fixie_data.handlers.GC.post" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="fixie_data.handlers.GC.response_keys">
+<code class="descname">response_keys</code><em class="property"> = ('status', 'message')</em><a class="headerlink" href="#fixie_data.handlers.GC.response_keys" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="fixie_data.handlers.GC.schema">
+<code class="descname">schema</code><em class="property"> = {}</em><a class="headerlink" href="#fixie_data.handlers.GC.schema" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="fixie_data.handlers.Info">
+<em class="property">class </em><code class="descclassname">fixie_data.handlers.</code><code class="descname">Info</code><span class="sig-paren">(</span><em>application</em>, <em>request</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fixie_data/handlers.html#Info"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fixie_data.handlers.Info" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="fixie_data.handlers.Info.post">
+<code class="descname">post</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fixie_data/handlers.html#Info.post"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fixie_data.handlers.Info.post" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="fixie_data.handlers.Info.response_keys">
+<code class="descname">response_keys</code><em class="property"> = ('infos', 'status', 'message')</em><a class="headerlink" href="#fixie_data.handlers.Info.response_keys" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="fixie_data.handlers.Info.schema">
+<code class="descname">schema</code><em class="property"> = {'paths': {'anyof': [{'type': 'string'}, {'type': 'list', 'empty': False, 'schema': {'type': 'string', 'empty': False}}], 'nullable': True, 'excludes': 'pattern'}, 'pattern': {'type': 'string', 'nullable': True, 'excludes': 'paths'}, 'token': {'type': 'string', 'regex': '[0-9a-fA-F]+', 'required': True}, 'user': {'type': 'string', 'empty': False, 'required': True}}</em><a class="headerlink" href="#fixie_data.handlers.Info.schema" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="fixie_data.handlers.ListPaths">
+<em class="property">class </em><code class="descclassname">fixie_data.handlers.</code><code class="descname">ListPaths</code><span class="sig-paren">(</span><em>application</em>, <em>request</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fixie_data/handlers.html#ListPaths"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fixie_data.handlers.ListPaths" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="fixie_data.handlers.ListPaths.post">
+<code class="descname">post</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fixie_data/handlers.html#ListPaths.post"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fixie_data.handlers.ListPaths.post" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="fixie_data.handlers.ListPaths.response_keys">
+<code class="descname">response_keys</code><em class="property"> = ('paths', 'status', 'message')</em><a class="headerlink" href="#fixie_data.handlers.ListPaths.response_keys" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="fixie_data.handlers.ListPaths.schema">
+<code class="descname">schema</code><em class="property"> = {'pattern': {'type': 'string', 'nullable': True}, 'token': {'type': 'string', 'regex': '[0-9a-fA-F]+', 'required': True}, 'user': {'type': 'string', 'empty': False, 'required': True}}</em><a class="headerlink" href="#fixie_data.handlers.ListPaths.schema" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="fixie_data.handlers.Table">
+<em class="property">class </em><code class="descclassname">fixie_data.handlers.</code><code class="descname">Table</code><span class="sig-paren">(</span><em>application</em>, <em>request</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fixie_data/handlers.html#Table"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fixie_data.handlers.Table" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="fixie_data.handlers.Table.post">
+<code class="descname">post</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fixie_data/handlers.html#Table.post"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fixie_data.handlers.Table.post" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="fixie_data.handlers.Table.response_keys">
+<code class="descname">response_keys</code><em class="property"> = ('table', 'status', 'message')</em><a class="headerlink" href="#fixie_data.handlers.Table.response_keys" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="fixie_data.handlers.Table.schema">
+<code class="descname">schema</code><em class="property"> = {'conds': {'type': 'list', 'schema': {'type': 'list', 'empty': False, 'minlength': 3, 'maxlength': 3}, 'nullable': True}, 'format': {'type': 'string', 'allowed': ['json', 'json:str', 'json:dict']}, 'name': {'type': 'string', 'empty': False, 'required': True}, 'orient': {'type': 'string', 'allowed': ['split', 'records', 'index', 'columns', 'values']}, 'path': {'type': 'string', 'empty': False, 'required': True}, 'token': {'type': 'string', 'regex': '[0-9a-fA-F]+', 'required': True}, 'user': {'type': 'string', 'empty': False, 'required': True}}</em><a class="headerlink" href="#fixie_data.handlers.Table.schema" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+        <p class="logo"><a href="../index.html" title="index">
+          <img class="logo" src="../_static/fixie-logo.png" alt="Logo"/>
+        </a></p>
+  <div class="sphinxprev">
+    <h4>Previous page</h4>
+    <p class="topless"><a href="fixie_data-paths.html"
+                          title="Previous page">&larr; Data Paths (<code class="docutils literal"><span class="pre">fixie_data.paths</span></code>)</a></p>
+  </div>
+  <div class="sphinxnext">
+    <h4>Next page</h4>
+    <p class="topless"><a href="../devguide.html"
+                          title="Next page">&rarr; Developer’s Guide</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/api/fixie_data-handlers.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+    
+    
+        <div class="sidebar-toggle-group no-js">
+            
+            <button class="sidebar-toggle" id="sidebar-hide" title="Hide the sidebar menu">
+                 «
+                <span class="show-for-small">hide menu</span>
+                
+            </button>
+            <button class="sidebar-toggle" id="sidebar-show" title="Show the sidebar menu">
+                
+                <span class="show-for-small">menu</span>
+                <span class="hide-for-small">sidebar</span>
+                 »
+            </button>
+        </div>
+    
+      <div class="clearer"></div>
+    </div>
+    <div class="relbar-bottom">
+        
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> &nbsp; &nbsp;</li>
+        <li class="right" >
+          <a href="../devguide.html" title="Developer’s Guide"
+             >next</a> &nbsp; &nbsp;</li>
+        <li class="right" >
+          <a href="fixie_data-paths.html" title="Data Paths (fixie_data.paths)"
+             >previous</a> &nbsp; &nbsp;</li>
+    <li><a href="../index.html">fixie  documentation</a> &#187;</li>
+
+          <li class="nav-item nav-item-1"><a href="index.html" >Fixie API</a> &#187;</li> 
+      </ul>
+    </div>
+    </div>
+
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2018, Anthony Scopatz.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.6.
+    </div>
+    <!-- cloud_sptheme 1.4 -->
+  </body>
+</html>

@@ -1,0 +1,371 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Batch Simulation Execution &amp; Management (fixie_batch.simulations) &#8212; fixie  documentation</title>
+    <link rel="stylesheet" href="../_static/numpy_friendly.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Noticia+Text|Open+Sans|Droid+Sans+Mono" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/jquery.cookie.js"></script>
+    <script type="text/javascript" src="../_static/cloud.base.js"></script>
+    <script type="text/javascript" src="../_static/cloud.js"></script>
+    <link rel="shortcut icon" href="../_static/fixie-logo.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Batch Environment (fixie_batch.environ)" href="fixie_batch-environ.html" />
+    <link rel="prev" title="Credentials Request Handlers (fixie_creds.handlers)" href="fixie_creds-handlers.html" />
+     
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="canonical" href="http://xon.sh/api/fixie_batch-simulations.html"/>
+
+  </head>
+  <body>
+    <div class="relbar-top">
+        
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> &nbsp; &nbsp;</li>
+        <li class="right" >
+          <a href="fixie_batch-environ.html" title="Batch Environment (fixie_batch.environ)"
+             accesskey="N">next</a> &nbsp; &nbsp;</li>
+        <li class="right" >
+          <a href="fixie_creds-handlers.html" title="Credentials Request Handlers (fixie_creds.handlers)"
+             accesskey="P">previous</a> &nbsp; &nbsp;</li>
+    <li><a href="../index.html">fixie  documentation</a> &#187;</li>
+
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">Fixie API</a> &#187;</li> 
+      </ul>
+    </div>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-fixie_batch.simulations">
+<span id="batch-simulation-execution-management-fixie-batch-simulations"></span><span id="fixie-batch-simulations"></span><h1>Batch Simulation Execution &amp; Management (<code class="docutils literal"><span class="pre">fixie_batch.simulations</span></code>)<a class="headerlink" href="#module-fixie_batch.simulations" title="Permalink to this headline">¶</a></h1>
+<p>Tools for spawning, canceling, and querying cyclus simulations. Simulations are
+spawned detached from the parent process. All information about running processes
+is stored on the file system. These tools should be robust to the server or other
+managing process going down.</p>
+<dl class="function">
+<dt id="fixie_batch.simulations.cancel">
+<code class="descclassname">fixie_batch.simulations.</code><code class="descname">cancel</code><span class="sig-paren">(</span><em>job</em>, <em>user</em>, <em>token</em>, <em>project=''</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fixie_batch/simulations.html#cancel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fixie_batch.simulations.cancel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Cancels a job that is queued or running.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>job</strong> : int or str</p>
+<blockquote>
+<div><p>If an integer, this is the jobid. If it is a string, it is interpreted as
+a job name, and a jobid is looked up via the aliases cache.</p>
+</div></blockquote>
+<p><strong>user</strong> : str</p>
+<blockquote>
+<div><p>Name of the user</p>
+</div></blockquote>
+<p><strong>token</strong> : str</p>
+<blockquote>
+<div><p>Credential token for the user</p>
+</div></blockquote>
+<p><strong>project</strong> : str, optional</p>
+<blockquote>
+<div><p>Name of the project, default ‘’, only used with alias lookup.</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>jobid</strong> : int</p>
+<blockquote>
+<div><p>Unique job id of the canceled run, this is negative if a unique jobid
+could not be found.</p>
+</div></blockquote>
+<p><strong>status</strong> : bool</p>
+<blockquote>
+<div><p>Whether run was successfully canceled.</p>
+</div></blockquote>
+<p><strong>message</strong> : str</p>
+<blockquote class="last">
+<div><p>Message about status</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="fixie_batch.simulations.canceled_ids">
+<code class="descclassname">fixie_batch.simulations.</code><code class="descname">canceled_ids</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#fixie_batch.simulations.canceled_ids" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set of canceled jobids.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="fixie_batch.simulations.completed_ids">
+<code class="descclassname">fixie_batch.simulations.</code><code class="descname">completed_ids</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#fixie_batch.simulations.completed_ids" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set of completed jobids.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="fixie_batch.simulations.failed_ids">
+<code class="descclassname">fixie_batch.simulations.</code><code class="descname">failed_ids</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#fixie_batch.simulations.failed_ids" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set of failed jobids.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="fixie_batch.simulations.query">
+<code class="descclassname">fixie_batch.simulations.</code><code class="descname">query</code><span class="sig-paren">(</span><em>statuses='all'</em>, <em>users=None</em>, <em>jobs=None</em>, <em>projects=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fixie_batch/simulations.html#query"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fixie_batch.simulations.query" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the state of the jobs, filtered as approriate.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>statuses</strong> : str or set of str, optional</p>
+<blockquote>
+<div><p>Which queue statuses we should pull jobs from. If ‘all’, every status queue is
+searched. If a set of str is provided, the statuses are ORed together.</p>
+</div></blockquote>
+<p><strong>users</strong> : str, set of str, or None, optional</p>
+<blockquote>
+<div><p>User name(s) to filter on. If None, all user names are used. User names
+are ORed together, if multiple are provided.</p>
+</div></blockquote>
+<p><strong>jobs</strong> : int, str, set of ints &amp; strs, or None, optional</p>
+<blockquote>
+<div><p>The jobids and job names to filter on, if provided.  If None, filtering
+on job id/name is not done. These are ORed together.</p>
+</div></blockquote>
+<p><strong>projects</strong> : str, set of str, or None, optional</p>
+<blockquote>
+<div><p>Project names to filer on, if not None. These are ORed together.</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>data</strong> : list of dicts or None</p>
+<blockquote>
+<div><p>The list of all jobs found. None if status is False.</p>
+</div></blockquote>
+<p><strong>status</strong> : bool</p>
+<blockquote>
+<div><p>Whether or not the query was successful.</p>
+</div></blockquote>
+<p><strong>message</strong> : str</p>
+<blockquote class="last">
+<div><p>Message related to the status of the query</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="fixie_batch.simulations.queued_ids">
+<code class="descclassname">fixie_batch.simulations.</code><code class="descname">queued_ids</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#fixie_batch.simulations.queued_ids" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set of queued jobids.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="fixie_batch.simulations.running_ids">
+<code class="descclassname">fixie_batch.simulations.</code><code class="descname">running_ids</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#fixie_batch.simulations.running_ids" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set of running jobids.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="fixie_batch.simulations.spawn">
+<code class="descclassname">fixie_batch.simulations.</code><code class="descname">spawn</code><span class="sig-paren">(</span><em>simulation</em>, <em>user</em>, <em>token</em>, <em>name=''</em>, <em>project=''</em>, <em>path=''</em>, <em>permissions='public'</em>, <em>post=()</em>, <em>notify=()</em>, <em>interactive=False</em>, <em>return_pid=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fixie_batch/simulations.html#spawn"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fixie_batch.simulations.spawn" title="Permalink to this definition">¶</a></dt>
+<dd><p>Spawning simulations let’s the batch execution service know to run a
+simulation as soon as possible.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>simulation</strong> : dict or string</p>
+<blockquote>
+<div><p>Cyclus simulation, currently only dict methods are supported</p>
+</div></blockquote>
+<p><strong>user</strong> : str</p>
+<blockquote>
+<div><p>Name of the user</p>
+</div></blockquote>
+<p><strong>token</strong> : str</p>
+<blockquote>
+<div><p>Credential token for the user</p>
+</div></blockquote>
+<p><strong>name</strong> : str, optional</p>
+<blockquote>
+<div><p>Alias for simulation, default ‘’</p>
+</div></blockquote>
+<p><strong>project</strong> : str, optional</p>
+<blockquote>
+<div><p>Name of the project, default ‘’</p>
+</div></blockquote>
+<p><strong>path</strong> : str, optional</p>
+<blockquote>
+<div><p>Path to suggest for output file. An empty string will apply
+a default path name, which depends on the simulation name,
+the project name, and the jobid.</p>
+</div></blockquote>
+<p><strong>permissions</strong> : str or list of str, optional</p>
+<blockquote>
+<div><p>“public” (default), “private”, or a list of users. Currently only
+public permissions are supported.</p>
+</div></blockquote>
+<p><strong>post</strong> : list, optional</p>
+<blockquote>
+<div><p>Any post processing activities, not currently supported</p>
+</div></blockquote>
+<p><strong>notify</strong> : list, optional</p>
+<blockquote>
+<div><p>Any notifications to register, not currently supported</p>
+</div></blockquote>
+<p><strong>interactive</strong> : bool, optional</p>
+<blockquote>
+<div><p>True or False (default), not currently supported.</p>
+</div></blockquote>
+<p><strong>return_pid</strong> : bool, optional</p>
+<blockquote>
+<div><p>Whether or not to return the PID of the detached child process.
+Default False, this is mostly for testing.</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>jobid</strong> : int</p>
+<blockquote>
+<div><p>Unique job id of this run, this is negative if job
+could not be spawned.</p>
+</div></blockquote>
+<p><strong>status</strong> : bool</p>
+<blockquote>
+<div><p>Whether run was spawned successfully,</p>
+</div></blockquote>
+<p><strong>message</strong> : str</p>
+<blockquote>
+<div><p>Message about status</p>
+</div></blockquote>
+<p><strong>pid</strong> : int, if return_pid is True</p>
+<blockquote class="last">
+<div><p>Child process id.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+        <p class="logo"><a href="../index.html" title="index">
+          <img class="logo" src="../_static/fixie-logo.png" alt="Logo"/>
+        </a></p>
+  <div class="sphinxprev">
+    <h4>Previous page</h4>
+    <p class="topless"><a href="fixie_creds-handlers.html"
+                          title="Previous page">&larr; Credentials Request Handlers (<code class="docutils literal"><span class="pre">fixie_creds.handlers</span></code>)</a></p>
+  </div>
+  <div class="sphinxnext">
+    <h4>Next page</h4>
+    <p class="topless"><a href="fixie_batch-environ.html"
+                          title="Next page">&rarr; Batch Environment (<code class="docutils literal"><span class="pre">fixie_batch.environ</span></code>)</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/api/fixie_batch-simulations.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+    
+    
+        <div class="sidebar-toggle-group no-js">
+            
+            <button class="sidebar-toggle" id="sidebar-hide" title="Hide the sidebar menu">
+                 «
+                <span class="show-for-small">hide menu</span>
+                
+            </button>
+            <button class="sidebar-toggle" id="sidebar-show" title="Show the sidebar menu">
+                
+                <span class="show-for-small">menu</span>
+                <span class="hide-for-small">sidebar</span>
+                 »
+            </button>
+        </div>
+    
+      <div class="clearer"></div>
+    </div>
+    <div class="relbar-bottom">
+        
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> &nbsp; &nbsp;</li>
+        <li class="right" >
+          <a href="fixie_batch-environ.html" title="Batch Environment (fixie_batch.environ)"
+             >next</a> &nbsp; &nbsp;</li>
+        <li class="right" >
+          <a href="fixie_creds-handlers.html" title="Credentials Request Handlers (fixie_creds.handlers)"
+             >previous</a> &nbsp; &nbsp;</li>
+    <li><a href="../index.html">fixie  documentation</a> &#187;</li>
+
+          <li class="nav-item nav-item-1"><a href="index.html" >Fixie API</a> &#187;</li> 
+      </ul>
+    </div>
+    </div>
+
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2018, Anthony Scopatz.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.6.
+    </div>
+    <!-- cloud_sptheme 1.4 -->
+  </body>
+</html>

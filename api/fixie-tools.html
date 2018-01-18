@@ -1,0 +1,256 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>General Purpose Fixie Tools (fixie.tools) &#8212; fixie  documentation</title>
+    <link rel="stylesheet" href="../_static/numpy_friendly.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Noticia+Text|Open+Sans|Droid+Sans+Mono" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/jquery.cookie.js"></script>
+    <script type="text/javascript" src="../_static/cloud.base.js"></script>
+    <script type="text/javascript" src="../_static/cloud.js"></script>
+    <link rel="shortcut icon" href="../_static/fixie-logo.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="JSON Utilities (fixie.jsonutils)" href="fixie-jsonutils.html" />
+    <link rel="prev" title="Command Line Interface (fixie.main)" href="fixie-main.html" />
+     
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="canonical" href="http://xon.sh/api/fixie-tools.html"/>
+
+  </head>
+  <body>
+    <div class="relbar-top">
+        
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> &nbsp; &nbsp;</li>
+        <li class="right" >
+          <a href="fixie-jsonutils.html" title="JSON Utilities (fixie.jsonutils)"
+             accesskey="N">next</a> &nbsp; &nbsp;</li>
+        <li class="right" >
+          <a href="fixie-main.html" title="Command Line Interface (fixie.main)"
+             accesskey="P">previous</a> &nbsp; &nbsp;</li>
+    <li><a href="../index.html">fixie  documentation</a> &#187;</li>
+
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">Fixie API</a> &#187;</li> 
+      </ul>
+    </div>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-fixie.tools">
+<span id="general-purpose-fixie-tools-fixie-tools"></span><span id="fixie-tools"></span><h1>General Purpose Fixie Tools (<code class="docutils literal"><span class="pre">fixie.tools</span></code>)<a class="headerlink" href="#module-fixie.tools" title="Permalink to this headline">¶</a></h1>
+<p>Various helper tools for fixie services.</p>
+<dl class="function">
+<dt id="fixie.tools.default_path">
+<code class="descclassname">fixie.tools.</code><code class="descname">default_path</code><span class="sig-paren">(</span><em>path</em>, <em>name=''</em>, <em>project=''</em>, <em>jobid=-1</em>, <em>ext='.h5'</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fixie/tools.html#default_path"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fixie.tools.default_path" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a default path name, depending on specified parameters.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="fixie.tools.detached_call">
+<code class="descclassname">fixie.tools.</code><code class="descname">detached_call</code><span class="sig-paren">(</span><em>args</em>, <em>stdout=None</em>, <em>stderr=None</em>, <em>stdin=None</em>, <em>env=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fixie/tools.html#detached_call"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fixie.tools.detached_call" title="Permalink to this definition">¶</a></dt>
+<dd><p>Runs a process and detaches it from its parent (i.e. the current process).
+In the parent process, this will return the PID of the child. By default,
+this will return redirect all streams to os.devnull. Additionally, if an
+environment is not provided, the current fixie environment is passed in.
+If close_fds is provided, it must be True.
+All other kwargs are passed through to Popen.</p>
+<p>Inspired by detach.call(), Copyright (c) 2014 Ryan Bourgeois.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="fixie.tools.fetch">
+<code class="descclassname">fixie.tools.</code><code class="descname">fetch</code><span class="sig-paren">(</span><em>url</em>, <em>obj</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fixie/tools.html#fetch"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fixie.tools.fetch" title="Permalink to this definition">¶</a></dt>
+<dd><p>Asynrochously fetches a fixie URL, using the standard fixie interface
+(POST method, fixie JSON utilties). This fetch functions accepts a Python
+object, rather than a string for its body.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="fixie.tools.flock">
+<code class="descclassname">fixie.tools.</code><code class="descname">flock</code><span class="sig-paren">(</span><em>filename</em>, <em>timeout=None</em>, <em>sleepfor=0.1</em>, <em>raise_errors=True</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fixie/tools.html#flock"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fixie.tools.flock" title="Permalink to this definition">¶</a></dt>
+<dd><p>A context manager for locking a file via the filesystem.
+This yeilds the file descriptor of the lockfile.
+If raise_errors is False and an exception would have been raised,
+a file descriptor of zero is yielded instead.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="fixie.tools.jobids_from_alias">
+<code class="descclassname">fixie.tools.</code><code class="descname">jobids_from_alias</code><span class="sig-paren">(</span><em>user</em>, <em>name=''</em>, <em>project=''</em>, <em>timeout=None</em>, <em>sleepfor=0.1</em>, <em>raise_errors=True</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fixie/tools.html#jobids_from_alias"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fixie.tools.jobids_from_alias" title="Permalink to this definition">¶</a></dt>
+<dd><p>Obtains a set of job ids from user, name, and project informnation.
+This looks up information in the the global jobs alias cache.
+Returns a set of jobids.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="fixie.tools.jobids_with_name">
+<code class="descclassname">fixie.tools.</code><code class="descname">jobids_with_name</code><span class="sig-paren">(</span><em>name</em>, <em>project=''</em>, <em>timeout=None</em>, <em>sleepfor=0.1</em>, <em>raise_errors=True</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fixie/tools.html#jobids_with_name"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fixie.tools.jobids_with_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Obtains a set of job ids across all users and projects
+that has a given name.
+This looks up information in the the global jobs alias cache.
+Returns a set of jobids.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="fixie.tools.next_jobid">
+<code class="descclassname">fixie.tools.</code><code class="descname">next_jobid</code><span class="sig-paren">(</span><em>timeout=None</em>, <em>sleepfor=0.1</em>, <em>raise_errors=True</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fixie/tools.html#next_jobid"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fixie.tools.next_jobid" title="Permalink to this definition">¶</a></dt>
+<dd><p>Obtains the next jobid from the $FIXIE_JOBID_FILE and increments the
+value in $FIXIE_JOBID_FILE. A None value means that the jobid could not
+be obtained in time.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="fixie.tools.register_job_alias">
+<code class="descclassname">fixie.tools.</code><code class="descname">register_job_alias</code><span class="sig-paren">(</span><em>jobid</em>, <em>user</em>, <em>name=''</em>, <em>project=''</em>, <em>timeout=None</em>, <em>sleepfor=0.1</em>, <em>raise_errors=True</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fixie/tools.html#register_job_alias"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fixie.tools.register_job_alias" title="Permalink to this definition">¶</a></dt>
+<dd><p>Registers a job id, user, name, and project in the global jobs alias cache.
+Returns whether the registration was successful or not.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="fixie.tools.verify_user">
+<code class="descclassname">fixie.tools.</code><code class="descname">verify_user</code><span class="sig-paren">(</span><em>user</em>, <em>token</em>, <em>url=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fixie/tools.html#verify_user"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fixie.tools.verify_user" title="Permalink to this definition">¶</a></dt>
+<dd><p>verifies a user/token pair. This happens either locally (if creds is available)
+or remotely (if $FIXIE_CREDS_URL was provided).</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="fixie.tools.verify_user_local">
+<code class="descclassname">fixie.tools.</code><code class="descname">verify_user_local</code><span class="sig-paren">(</span><em>user</em>, <em>token</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fixie/tools.html#verify_user_local"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fixie.tools.verify_user_local" title="Permalink to this definition">¶</a></dt>
+<dd><p>Verifies a user via the local (in process) credetialling service.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="fixie.tools.verify_user_remote">
+<code class="descclassname">fixie.tools.</code><code class="descname">verify_user_remote</code><span class="sig-paren">(</span><em>user</em>, <em>token</em>, <em>base_url</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fixie/tools.html#verify_user_remote"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fixie.tools.verify_user_remote" title="Permalink to this definition">¶</a></dt>
+<dd><p>Verifies a user via a remote credentialling service. This runs syncronously.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="fixie.tools.waitpid">
+<code class="descclassname">fixie.tools.</code><code class="descname">waitpid</code><span class="sig-paren">(</span><em>pid</em>, <em>timeout=None</em>, <em>sleepfor=0.001</em>, <em>raise_errors=True</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fixie/tools.html#waitpid"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fixie.tools.waitpid" title="Permalink to this definition">¶</a></dt>
+<dd><p>Waits for a PID, even if if it isn’t a child of the current process.
+Returns a boolean flag for whether the waiting was successfull or not.</p>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+        <p class="logo"><a href="../index.html" title="index">
+          <img class="logo" src="../_static/fixie-logo.png" alt="Logo"/>
+        </a></p>
+  <div class="sphinxprev">
+    <h4>Previous page</h4>
+    <p class="topless"><a href="fixie-main.html"
+                          title="Previous page">&larr; Command Line Interface (<code class="docutils literal"><span class="pre">fixie.main</span></code>)</a></p>
+  </div>
+  <div class="sphinxnext">
+    <h4>Next page</h4>
+    <p class="topless"><a href="fixie-jsonutils.html"
+                          title="Next page">&rarr; JSON Utilities (<code class="docutils literal"><span class="pre">fixie.jsonutils</span></code>)</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/api/fixie-tools.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+    
+    
+        <div class="sidebar-toggle-group no-js">
+            
+            <button class="sidebar-toggle" id="sidebar-hide" title="Hide the sidebar menu">
+                 «
+                <span class="show-for-small">hide menu</span>
+                
+            </button>
+            <button class="sidebar-toggle" id="sidebar-show" title="Show the sidebar menu">
+                
+                <span class="show-for-small">menu</span>
+                <span class="hide-for-small">sidebar</span>
+                 »
+            </button>
+        </div>
+    
+      <div class="clearer"></div>
+    </div>
+    <div class="relbar-bottom">
+        
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> &nbsp; &nbsp;</li>
+        <li class="right" >
+          <a href="fixie-jsonutils.html" title="JSON Utilities (fixie.jsonutils)"
+             >next</a> &nbsp; &nbsp;</li>
+        <li class="right" >
+          <a href="fixie-main.html" title="Command Line Interface (fixie.main)"
+             >previous</a> &nbsp; &nbsp;</li>
+    <li><a href="../index.html">fixie  documentation</a> &#187;</li>
+
+          <li class="nav-item nav-item-1"><a href="index.html" >Fixie API</a> &#187;</li> 
+      </ul>
+    </div>
+    </div>
+
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2018, Anthony Scopatz.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.6.
+    </div>
+    <!-- cloud_sptheme 1.4 -->
+  </body>
+</html>

@@ -1,0 +1,315 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Fixie: Cyclus-as-a-Service &#8212; fixie  documentation</title>
+    <link rel="stylesheet" href="_static/numpy_friendly.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Noticia+Text|Open+Sans|Droid+Sans+Mono" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/jquery.cookie.js"></script>
+    <script type="text/javascript" src="_static/cloud.base.js"></script>
+    <script type="text/javascript" src="_static/cloud.js"></script>
+    <link rel="shortcut icon" href="_static/fixie-logo.ico"/>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Fixie Command Line Usage" href="usage.html" />
+     
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="canonical" href="http://xon.sh/index.html"/>
+
+  </head>
+  <body>
+    <div class="relbar-top">
+        
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> &nbsp; &nbsp;</li>
+        <li class="right" >
+          <a href="usage.html" title="Fixie Command Line Usage"
+             accesskey="N">next</a> &nbsp; &nbsp;</li>
+    <li><a href="#">fixie  documentation</a> &#187;</li>
+ 
+      </ul>
+    </div>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="fixie-cyclus-as-a-service">
+<h1>Fixie: Cyclus-as-a-Service<a class="headerlink" href="#fixie-cyclus-as-a-service" title="Permalink to this headline">¶</a></h1>
+<p>Fixie is a xonsh-powered Cyclus cloud. Fixie is thus a collection of services, each
+in their own package, which are managed by the top-level <code class="docutils literal"><span class="pre">fixie</span></code> command and package.
+Currently available services are:</p>
+<ul class="simple">
+<li><code class="docutils literal"><span class="pre">fixie-creds</span></code>: A credentialing service for managing and validating users.</li>
+<li><code class="docutils literal"><span class="pre">fixie-batch</span></code>: A batch execution and queuing service for running Cyclus jobs.</li>
+<li><code class="docutils literal"><span class="pre">fixie-data</span></code>: A service for manganing Cyclus databases and related files.</li>
+</ul>
+<div class="section" id="installation">
+<h2>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h2>
+<p>You can use <code class="docutils literal"><span class="pre">conda</span></code> or <code class="docutils literal"><span class="pre">pip</span></code> to install any or all of the fixie services, as well
+as the top-level fixie package.  For example,</p>
+<p><strong>conda</strong></p>
+<div class="highlight-bash"><div class="highlight"><pre><span></span>$ conda install -c conda-forge fixie fixie-batch
+</pre></div>
+</div>
+<p><strong>pip</strong></p>
+<div class="highlight-bash"><div class="highlight"><pre><span></span>$ pip install fixie fixie-batch
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">For some services, such as <code class="docutils literal"><span class="pre">fixie-batch</span></code>, Cyclus is required. While there
+is a Cyclus package available in conda-forge, there is not one on PyPI, and
+you would need to install Cyclus yourself.</p>
+</div>
+</div>
+<div class="section" id="quick-start">
+<h2>Quick Start<a class="headerlink" href="#quick-start" title="Permalink to this headline">¶</a></h2>
+<p>Fixie is a command line application that starts up a Tornado web service. By default,
+all services that are installed on a machine are started.  However, you can choose to
+run just a subset of services that interest you. For example,</p>
+<div class="highlight-bash"><div class="highlight"><pre><span></span>$ fixie creds batch
+server:starting fixie http://localhost:8642
+...
+</pre></div>
+</div>
+<p>For more information, please see the <a class="reference external" href="usage.html">Usage page</a>.  You can then <code class="docutils literal"><span class="pre">POST</span></code>
+JSON to various URLs that the services enable.  For instance, to register a new user,
+you could:</p>
+<div class="highlight-bash"><div class="highlight"><pre><span></span>$  curl -X POST http://localhost:8642/register -d <span class="s1">&#39;{&quot;user&quot;: &quot;buttercup&quot;, &quot;email&quot;: &quot;tpb@example.com&quot;}&#39;</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="contents">
+<h2>Contents<a class="headerlink" href="#contents" title="Permalink to this headline">¶</a></h2>
+<p><strong>Guides:</strong></p>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="usage.html">Fixie Command Line Usage</a></li>
+</ul>
+</div>
+<p><strong>Development Spiral:</strong></p>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="api/index.html">Fixie API</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="api/fixie-request_handler.html">JSON Validating Request Handler (<code class="docutils literal"><span class="pre">fixie.request_handler</span></code>)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/fixie-environ.html">Environment (<code class="docutils literal"><span class="pre">fixie.environ</span></code>)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/fixie-logger.html">Logger (<code class="docutils literal"><span class="pre">fixie.logger</span></code>)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/fixie-main.html">Command Line Interface (<code class="docutils literal"><span class="pre">fixie.main</span></code>)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/fixie-tools.html">General Purpose Fixie Tools (<code class="docutils literal"><span class="pre">fixie.tools</span></code>)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/fixie-jsonutils.html">JSON Utilities (<code class="docutils literal"><span class="pre">fixie.jsonutils</span></code>)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/fixie_creds-cache.html">Credentials Cache (<code class="docutils literal"><span class="pre">fixie_creds.cache</span></code>)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/fixie_creds-environ.html">Credentials Environment (<code class="docutils literal"><span class="pre">fixie_creds.environ</span></code>)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/fixie_creds-handlers.html">Credentials Request Handlers (<code class="docutils literal"><span class="pre">fixie_creds.handlers</span></code>)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/fixie_batch-simulations.html">Batch Simulation Execution &amp; Management (<code class="docutils literal"><span class="pre">fixie_batch.simulations</span></code>)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/fixie_batch-environ.html">Batch Environment (<code class="docutils literal"><span class="pre">fixie_batch.environ</span></code>)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/fixie_batch-handlers.html">Batch Request Handlers (<code class="docutils literal"><span class="pre">fixie_batch.handlers</span></code>)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/fixie_data-paths.html">Data Paths (<code class="docutils literal"><span class="pre">fixie_data.paths</span></code>)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/fixie_data-handlers.html">Data Request Handlers (<code class="docutils literal"><span class="pre">fixie_data.handlers</span></code>)</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="devguide.html">Developer’s Guide</a></li>
+</ul>
+</div>
+</div>
+<div class="section" id="contributing">
+<h2>Contributing<a class="headerlink" href="#contributing" title="Permalink to this headline">¶</a></h2>
+<p>We highly encourage contributions to rever! If you would like to contribute,
+it is as easy as forking the repository on GitHub, making your changes, and
+issuing a pull request.
+See the <a class="reference external" href="devguide.html">Developer’s Guide</a> for more information about contributing.</p>
+</div>
+<div class="section" id="helpful-links">
+<h2>Helpful Links<a class="headerlink" href="#helpful-links" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><a class="reference external" href="http://ergs.github.io/fixie-docs">Documentation</a></li>
+<li><a class="reference external" href="https://github.com/ergs/fixie">GitHub Repository</a></li>
+<li><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></li>
+<li><a class="reference internal" href="py-modindex.html"><span class="std std-ref">Module Index</span></a></li>
+<li><a class="reference internal" href="search.html"><span class="std std-ref">Search Page</span></a></li>
+</ul>
+<a href="https://github.com/ergs/fixie" class='github-fork-ribbon' title='Fork me on GitHub'>Fork me on GitHub</a>
+
+<style>
+/*!
+ * Adapted from
+ * "Fork me on GitHub" CSS ribbon v0.2.0 | MIT License
+ * https://github.com/simonwhitaker/github-fork-ribbon-css
+ */
+
+.github-fork-ribbon, .github-fork-ribbon:hover, .github-fork-ribbon:hover:active {
+  background:none;
+  left: inherit;
+  width: 12.1em;
+  height: 12.1em;
+  position: absolute;
+  overflow: hidden;
+  top: 0;
+  right: 0;
+  z-index: 9999;
+  pointer-events: none;
+  text-decoration: none;
+  text-indent: -999999px;
+}
+
+.github-fork-ribbon:before, .github-fork-ribbon:after {
+  /* The right and left classes determine the side we attach our banner to */
+  position: absolute;
+  display: block;
+  width: 15.38em;
+  height: 1.54em;
+  top: 3.23em;
+  right: -3.23em;
+  box-sizing: content-box;
+  transform: rotate(45deg);
+}
+
+.github-fork-ribbon:before {
+  content: "";
+  padding: .38em 0;
+  background-image: linear-gradient(to bottom, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.1));
+  box-shadow: 0 0.07em 0.4em 0 rgba(0, 0, 0, 0.3);'
+  pointer-events: auto;
+}
+
+.github-fork-ribbon:after {
+  content: attr(title);
+  color: #000;
+  font: 700 1em "Helvetica Neue", Helvetica, Arial, sans-serif;
+  line-height: 1.54em;
+  text-decoration: none;
+  text-align: center;
+  text-indent: 0;
+  padding: .15em 0;
+  margin: .15em 0;
+  border-width: .08em 0;
+  border-style: dotted;
+  border-color: #777;
+}
+
+</style></div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+        <p class="logo"><a href="#" title="index">
+          <img class="logo" src="_static/fixie-logo.png" alt="Logo"/>
+        </a></p><div class="sphinx-toc sphinxlocaltoc">
+    <h3><a href="#">Page contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">Fixie: Cyclus-as-a-Service</a><ul>
+<li><a class="reference internal" href="#installation">Installation</a></li>
+<li><a class="reference internal" href="#quick-start">Quick Start</a></li>
+<li><a class="reference internal" href="#contents">Contents</a><ul>
+</ul>
+</li>
+<li><a class="reference internal" href="#contributing">Contributing</a></li>
+<li><a class="reference internal" href="#helpful-links">Helpful Links</a></li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div class="sphinxnext">
+    <h4>Next page</h4>
+    <p class="topless"><a href="usage.html"
+                          title="Next page">&rarr; Fixie Command Line Usage</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/index.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+    
+    
+        <div class="sidebar-toggle-group no-js">
+            
+            <button class="sidebar-toggle" id="sidebar-hide" title="Hide the sidebar menu">
+                 «
+                <span class="show-for-small">hide menu</span>
+                
+            </button>
+            <button class="sidebar-toggle" id="sidebar-show" title="Show the sidebar menu">
+                
+                <span class="show-for-small">menu</span>
+                <span class="hide-for-small">sidebar</span>
+                 »
+            </button>
+        </div>
+    
+      <div class="clearer"></div>
+    </div>
+    <div class="relbar-bottom">
+        
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> &nbsp; &nbsp;</li>
+        <li class="right" >
+          <a href="usage.html" title="Fixie Command Line Usage"
+             >next</a> &nbsp; &nbsp;</li>
+    <li><a href="#">fixie  documentation</a> &#187;</li>
+ 
+      </ul>
+    </div>
+    </div>
+
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2018, Anthony Scopatz.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.6.
+    </div>
+    <!-- cloud_sptheme 1.4 -->
+  </body>
+</html>

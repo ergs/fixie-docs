@@ -1,0 +1,340 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>fixie.environ &#8212; fixie  documentation</title>
+    <link rel="stylesheet" href="../../_static/numpy_friendly.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Noticia+Text|Open+Sans|Droid+Sans+Mono" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../_static/jquery.cookie.js"></script>
+    <script type="text/javascript" src="../../_static/cloud.base.js"></script>
+    <script type="text/javascript" src="../../_static/cloud.js"></script>
+    <link rel="shortcut icon" href="../../_static/fixie-logo.ico"/>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+     
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="canonical" href="http://xon.sh/_modules/fixie/environ.html"/>
+
+  </head>
+  <body>
+    <div class="relbar-top">
+        
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> &nbsp; &nbsp;</li>
+    <li><a href="../../index.html">fixie  documentation</a> &#187;</li>
+
+          <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &#187;</li> 
+      </ul>
+    </div>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for fixie.environ</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Custom environment handling tools for fixie.&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">builtins</span>
+<span class="kn">import</span> <span class="nn">multiprocessing</span>
+<span class="kn">from</span> <span class="nn">contextlib</span> <span class="k">import</span> <span class="n">contextmanager</span>
+<span class="kn">from</span> <span class="nn">collections</span> <span class="k">import</span> <span class="n">OrderedDict</span>
+<span class="kn">from</span> <span class="nn">collections.abc</span> <span class="k">import</span> <span class="n">MutableMapping</span>
+
+<span class="kn">from</span> <span class="nn">xonsh.environ</span> <span class="k">import</span> <span class="n">Ensurer</span><span class="p">,</span> <span class="n">VarDocs</span>
+<span class="kn">from</span> <span class="nn">xonsh.tools</span> <span class="k">import</span> <span class="p">(</span><span class="n">is_string</span><span class="p">,</span> <span class="n">ensure_string</span><span class="p">,</span> <span class="n">always_false</span><span class="p">,</span> <span class="n">always_true</span><span class="p">,</span> <span class="n">is_bool</span><span class="p">,</span>
+                         <span class="n">is_string_set</span><span class="p">,</span> <span class="n">csv_to_set</span><span class="p">,</span> <span class="n">set_to_csv</span><span class="p">,</span> <span class="n">is_nonstring_seq_of_strings</span><span class="p">,</span>
+                         <span class="n">to_bool</span><span class="p">,</span> <span class="n">bool_to_str</span><span class="p">,</span> <span class="n">expand_path</span><span class="p">,</span> <span class="n">is_int</span><span class="p">,</span> <span class="n">is_float</span><span class="p">)</span>
+
+
+<span class="n">ENV</span> <span class="o">=</span> <span class="n">builtins</span><span class="o">.</span><span class="n">__xonsh_env__</span>
+<span class="n">SERVICES</span> <span class="o">=</span> <span class="nb">frozenset</span><span class="p">([</span><span class="s1">&#39;creds&#39;</span><span class="p">,</span> <span class="s1">&#39;batch&#39;</span><span class="p">,</span> <span class="s1">&#39;data&#39;</span><span class="p">])</span>
+
+
+<div class="viewcode-block" id="csv_to_list"><a class="viewcode-back" href="../../api/fixie-environ.html#fixie.environ.csv_to_list">[docs]</a><span class="k">def</span> <span class="nf">csv_to_list</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Converts a comma separated string to a list of strings.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">x</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="list_to_csv"><a class="viewcode-back" href="../../api/fixie-environ.html#fixie.environ.list_to_csv">[docs]</a><span class="k">def</span> <span class="nf">list_to_csv</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Converts a list of str to a comma-separated string.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="s1">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">x</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="is_dict_str_str_or_none"><a class="viewcode-back" href="../../api/fixie-environ.html#fixie.environ.is_dict_str_str_or_none">[docs]</a><span class="k">def</span> <span class="nf">is_dict_str_str_or_none</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Checks if x is a mutable mapping from strings to strings or None&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">x</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">True</span>
+    <span class="k">elif</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">MutableMapping</span><span class="p">):</span>
+        <span class="k">return</span> <span class="kc">False</span>
+    <span class="c1"># now we know we have a mapping, check items.</span>
+    <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">x</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="k">return</span> <span class="kc">False</span>
+    <span class="k">return</span> <span class="kc">True</span></div>
+
+
+<div class="viewcode-block" id="expand_file_and_mkdirs"><a class="viewcode-back" href="../../api/fixie-environ.html#fixie.environ.expand_file_and_mkdirs">[docs]</a><span class="k">def</span> <span class="nf">expand_file_and_mkdirs</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Expands a variable that represents a file, and ensures that the</span>
+<span class="sd">    directory it lives in actually exists.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">expand_path</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+    <span class="n">d</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">x</span></div>
+
+
+<div class="viewcode-block" id="expand_and_make_dir"><a class="viewcode-back" href="../../api/fixie-environ.html#fixie.environ.expand_and_make_dir">[docs]</a><span class="k">def</span> <span class="nf">expand_and_make_dir</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Expands a variable that represents a directory, and ensures that the</span>
+<span class="sd">    directory actually exists.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">expand_path</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">x</span></div>
+
+
+<div class="viewcode-block" id="fixie_config_dir"><a class="viewcode-back" href="../../api/fixie-environ.html#fixie.environ.fixie_config_dir">[docs]</a><span class="k">def</span> <span class="nf">fixie_config_dir</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;Ensures and returns the $FIXIE_CONFIG_DIR&quot;&quot;&quot;</span>
+    <span class="n">fcd</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">expanduser</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">ENV</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;XDG_CONFIG_HOME&#39;</span><span class="p">),</span> <span class="s1">&#39;fixie&#39;</span><span class="p">))</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">fcd</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">fcd</span></div>
+
+
+<div class="viewcode-block" id="fixie_data_dir"><a class="viewcode-back" href="../../api/fixie-environ.html#fixie.environ.fixie_data_dir">[docs]</a><span class="k">def</span> <span class="nf">fixie_data_dir</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;Ensures and returns the $FIXIE_DATA_DIR&quot;&quot;&quot;</span>
+    <span class="n">fdd</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">expanduser</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">ENV</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;XDG_DATA_HOME&#39;</span><span class="p">),</span> <span class="s1">&#39;fixie&#39;</span><span class="p">))</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">fdd</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">fdd</span></div>
+
+
+<div class="viewcode-block" id="fixie_logfile"><a class="viewcode-back" href="../../api/fixie-environ.html#fixie.environ.fixie_logfile">[docs]</a><span class="k">def</span> <span class="nf">fixie_logfile</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;Ensures and returns the $FIXIE_LOGFILE&quot;&quot;&quot;</span>
+    <span class="n">flf</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">ENV</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;FIXIE_DATA_DIR&#39;</span><span class="p">),</span> <span class="s1">&#39;log.json&#39;</span><span class="p">)</span>
+    <span class="n">flf</span> <span class="o">=</span> <span class="n">expand_file_and_mkdirs</span><span class="p">(</span><span class="n">flf</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">flf</span></div>
+
+
+<div class="viewcode-block" id="fixie_jobs_dir"><a class="viewcode-back" href="../../api/fixie-environ.html#fixie.environ.fixie_jobs_dir">[docs]</a><span class="k">def</span> <span class="nf">fixie_jobs_dir</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;Ensures and returns the $FIXIE_JOBS_DIR&quot;&quot;&quot;</span>
+    <span class="n">fjd</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">ENV</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;FIXIE_DATA_DIR&#39;</span><span class="p">),</span> <span class="s1">&#39;jobs&#39;</span><span class="p">)</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">fjd</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">fjd</span></div>
+
+
+<div class="viewcode-block" id="fixie_jobid_file"><a class="viewcode-back" href="../../api/fixie-environ.html#fixie.environ.fixie_jobid_file">[docs]</a><span class="k">def</span> <span class="nf">fixie_jobid_file</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;Ensures and returns the $FIXIE_JOBID_FILE&quot;&quot;&quot;</span>
+    <span class="n">fjf</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">ENV</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;FIXIE_JOBS_DIR&#39;</span><span class="p">),</span> <span class="s1">&#39;id&#39;</span><span class="p">)</span>
+    <span class="n">fjf</span> <span class="o">=</span> <span class="n">expand_file_and_mkdirs</span><span class="p">(</span><span class="n">fjf</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">fjf</span></div>
+
+
+<div class="viewcode-block" id="fixie_job_aliases_file"><a class="viewcode-back" href="../../api/fixie-environ.html#fixie.environ.fixie_job_aliases_file">[docs]</a><span class="k">def</span> <span class="nf">fixie_job_aliases_file</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;Ensures and returns the $FIXIE_JOB_ALIASES_FILE&quot;&quot;&quot;</span>
+    <span class="n">fjf</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">ENV</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;FIXIE_JOBS_DIR&#39;</span><span class="p">),</span> <span class="s1">&#39;aliases.json&#39;</span><span class="p">)</span>
+    <span class="n">fjf</span> <span class="o">=</span> <span class="n">expand_file_and_mkdirs</span><span class="p">(</span><span class="n">fjf</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">fjf</span></div>
+
+
+<div class="viewcode-block" id="fixie_sims_dir"><a class="viewcode-back" href="../../api/fixie-environ.html#fixie.environ.fixie_sims_dir">[docs]</a><span class="k">def</span> <span class="nf">fixie_sims_dir</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;Ensures and returns the $FIXIE_SIMS_DIR&quot;&quot;&quot;</span>
+    <span class="n">fsd</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">ENV</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;FIXIE_DATA_DIR&#39;</span><span class="p">),</span> <span class="s1">&#39;sims&#39;</span><span class="p">)</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">fsd</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">fsd</span></div>
+
+
+<div class="viewcode-block" id="fixie_paths_dir"><a class="viewcode-back" href="../../api/fixie-environ.html#fixie.environ.fixie_paths_dir">[docs]</a><span class="k">def</span> <span class="nf">fixie_paths_dir</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;Ensures and returns the $FIXIE_PATHS_DIR&quot;&quot;&quot;</span>
+    <span class="n">fsd</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">ENV</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;FIXIE_DATA_DIR&#39;</span><span class="p">),</span> <span class="s1">&#39;paths&#39;</span><span class="p">)</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">fsd</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">fsd</span></div>
+
+
+<span class="c1"># key = name</span>
+<span class="c1"># value = (default, validate, convert, detype, docstr)</span>
+<span class="c1"># this needs to be ordered so that the default are applied in the correct order</span>
+<span class="n">ENVVARS</span> <span class="o">=</span> <span class="n">OrderedDict</span><span class="p">([</span>
+    <span class="p">(</span><span class="s1">&#39;FIXIE_CONFIG_DIR&#39;</span><span class="p">,</span> <span class="p">(</span><span class="n">fixie_config_dir</span><span class="p">,</span> <span class="n">is_string</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="n">ensure_string</span><span class="p">,</span>
+                          <span class="s1">&#39;Path to fixie configuration directory&#39;</span><span class="p">)),</span>
+    <span class="p">(</span><span class="s1">&#39;FIXIE_DATA_DIR&#39;</span><span class="p">,</span> <span class="p">(</span><span class="n">fixie_data_dir</span><span class="p">,</span> <span class="n">is_string</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="n">ensure_string</span><span class="p">,</span>
+                       <span class="s1">&#39;Path to fixie data directory&#39;</span><span class="p">)),</span>
+    <span class="p">(</span><span class="s1">&#39;FIXIE_JOBS_DIR&#39;</span><span class="p">,</span> <span class="p">(</span><span class="n">fixie_jobs_dir</span><span class="p">,</span> <span class="n">is_string</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="n">ensure_string</span><span class="p">,</span>
+                        <span class="s1">&#39;Path to fixie jobs directory&#39;</span><span class="p">)),</span>
+    <span class="p">(</span><span class="s1">&#39;FIXIE_JOBID_FILE&#39;</span><span class="p">,</span> <span class="p">(</span><span class="n">fixie_jobid_file</span><span class="p">,</span> <span class="n">always_false</span><span class="p">,</span> <span class="n">expand_file_and_mkdirs</span><span class="p">,</span> <span class="n">ensure_string</span><span class="p">,</span>
+                          <span class="s1">&#39;Path to the fixie job file, which contains the next jobid.&#39;</span><span class="p">)),</span>
+    <span class="p">(</span><span class="s1">&#39;FIXIE_JOB_ALIASES_FILE&#39;</span><span class="p">,</span> <span class="p">(</span><span class="n">fixie_job_aliases_file</span><span class="p">,</span> <span class="n">always_false</span><span class="p">,</span>
+                                <span class="n">expand_file_and_mkdirs</span><span class="p">,</span> <span class="n">ensure_string</span><span class="p">,</span>
+                                <span class="s1">&#39;Path to the fixie job names file, which contains &#39;</span>
+                                <span class="s1">&#39;aliases associated with users, projects, and jobids.&#39;</span><span class="p">)),</span>
+    <span class="p">(</span><span class="s1">&#39;FIXIE_HOLDING_TIME&#39;</span><span class="p">,</span> <span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="s1">&#39;inf&#39;</span><span class="p">),</span> <span class="n">is_float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="n">ensure_string</span><span class="p">,</span>
+                            <span class="s1">&#39;Length of time to store databases on the server.&#39;</span><span class="p">)),</span>
+    <span class="p">(</span><span class="s1">&#39;FIXIE_NJOBS&#39;</span><span class="p">,</span> <span class="p">(</span><span class="n">multiprocessing</span><span class="o">.</span><span class="n">cpu_count</span><span class="p">(),</span> <span class="n">is_int</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="n">ensure_string</span><span class="p">,</span>
+                     <span class="s1">&#39;Number of jobs allowed in parallel on this server.&#39;</span><span class="p">)),</span>
+    <span class="p">(</span><span class="s1">&#39;FIXIE_LOGFILE&#39;</span><span class="p">,</span> <span class="p">(</span><span class="n">fixie_logfile</span><span class="p">,</span> <span class="n">always_false</span><span class="p">,</span> <span class="n">expand_file_and_mkdirs</span><span class="p">,</span> <span class="n">ensure_string</span><span class="p">,</span>
+                       <span class="s1">&#39;Path to the fixie logfile.&#39;</span><span class="p">)),</span>
+    <span class="p">(</span><span class="s1">&#39;FIXIE_SIMS_DIR&#39;</span><span class="p">,</span> <span class="p">(</span><span class="n">fixie_sims_dir</span><span class="p">,</span> <span class="n">is_string</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="n">ensure_string</span><span class="p">,</span>
+                        <span class="s1">&#39;Path to fixie simulations directory, where simulation &#39;</span>
+                        <span class="s1">&#39;objects are stored.&#39;</span><span class="p">)),</span>
+    <span class="p">(</span><span class="s1">&#39;FIXIE_PATHS_DIR&#39;</span><span class="p">,</span> <span class="p">(</span><span class="n">fixie_paths_dir</span><span class="p">,</span> <span class="n">is_string</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="n">ensure_string</span><span class="p">,</span>
+                        <span class="s1">&#39;Path to fixie paths directory, where database path metadata &#39;</span>
+                        <span class="s1">&#39;is stored.&#39;</span><span class="p">)),</span>
+    <span class="p">])</span>
+<span class="k">for</span> <span class="n">service</span> <span class="ow">in</span> <span class="n">SERVICES</span><span class="p">:</span>
+    <span class="n">key</span> <span class="o">=</span> <span class="s1">&#39;FIXIE_&#39;</span> <span class="o">+</span> <span class="n">service</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="o">+</span> <span class="s1">&#39;_URL&#39;</span>
+    <span class="n">ENVVARS</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">is_string</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="n">ensure_string</span><span class="p">,</span>
+                    <span class="s1">&#39;Base URL for &#39;</span> <span class="o">+</span> <span class="n">service</span> <span class="o">+</span> <span class="s1">&#39; service, default is an empty &#39;</span>
+                    <span class="s1">&#39;string indicating service is provided locally (if available).&#39;</span><span class="p">)</span>
+<span class="k">del</span> <span class="n">service</span><span class="p">,</span> <span class="n">key</span>
+
+
+<span class="n">_ENV_SETUP</span> <span class="o">=</span> <span class="kc">False</span>
+
+
+<div class="viewcode-block" id="setup"><a class="viewcode-back" href="../../api/fixie-environ.html#fixie.environ.setup">[docs]</a><span class="k">def</span> <span class="nf">setup</span><span class="p">():</span>
+    <span class="k">global</span> <span class="n">_ENV_SETUP</span>
+    <span class="k">if</span> <span class="n">_ENV_SETUP</span><span class="p">:</span>
+        <span class="k">return</span>
+    <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="p">(</span><span class="n">default</span><span class="p">,</span> <span class="n">validate</span><span class="p">,</span> <span class="n">convert</span><span class="p">,</span> <span class="n">detype</span><span class="p">,</span> <span class="n">docstr</span><span class="p">)</span> <span class="ow">in</span> <span class="n">ENVVARS</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">ENV</span><span class="p">:</span>
+            <span class="k">del</span> <span class="n">ENV</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+        <span class="n">ENV</span><span class="o">.</span><span class="n">_defaults</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">default</span><span class="p">()</span> <span class="k">if</span> <span class="n">callable</span><span class="p">(</span><span class="n">default</span><span class="p">)</span> <span class="k">else</span> <span class="n">default</span>
+        <span class="n">ENV</span><span class="o">.</span><span class="n">_ensurers</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">Ensurer</span><span class="p">(</span><span class="n">validate</span><span class="o">=</span><span class="n">validate</span><span class="p">,</span> <span class="n">convert</span><span class="o">=</span><span class="n">convert</span><span class="p">,</span>
+                                     <span class="n">detype</span><span class="o">=</span><span class="n">detype</span><span class="p">)</span>
+        <span class="n">ENV</span><span class="o">.</span><span class="n">_docs</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">VarDocs</span><span class="p">(</span><span class="n">docstr</span><span class="o">=</span><span class="n">docstr</span><span class="p">)</span>
+    <span class="n">_ENV_SETUP</span> <span class="o">=</span> <span class="kc">True</span></div>
+
+
+<div class="viewcode-block" id="teardown"><a class="viewcode-back" href="../../api/fixie-environ.html#fixie.environ.teardown">[docs]</a><span class="k">def</span> <span class="nf">teardown</span><span class="p">():</span>
+    <span class="k">global</span> <span class="n">_ENV_SETUP</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">_ENV_SETUP</span><span class="p">:</span>
+        <span class="k">return</span>
+    <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">ENVVARS</span><span class="p">:</span>
+        <span class="n">ENV</span><span class="o">.</span><span class="n">_defaults</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+        <span class="n">ENV</span><span class="o">.</span><span class="n">_ensurers</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+        <span class="n">ENV</span><span class="o">.</span><span class="n">_docs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">ENV</span><span class="p">:</span>
+            <span class="k">del</span> <span class="n">ENV</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+    <span class="n">_ENV_SETUP</span> <span class="o">=</span> <span class="kc">False</span></div>
+
+
+<div class="viewcode-block" id="context"><a class="viewcode-back" href="../../api/fixie-environ.html#fixie.environ.context">[docs]</a><span class="nd">@contextmanager</span>
+<span class="k">def</span> <span class="nf">context</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;A context manager for entering and leaving the fixie environment</span>
+<span class="sd">    safely. This context manager is reentrant and will only be executed</span>
+<span class="sd">    if it hasn&#39;t already been entered.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">global</span> <span class="n">_ENV_SETUP</span>
+    <span class="k">if</span> <span class="n">_ENV_SETUP</span><span class="p">:</span>
+        <span class="k">yield</span>
+        <span class="k">return</span>
+    <span class="n">setup</span><span class="p">()</span>
+    <span class="k">yield</span>
+    <span class="n">teardown</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="fixie_envvar_names"><a class="viewcode-back" href="../../api/fixie-environ.html#fixie.environ.fixie_envvar_names">[docs]</a><span class="k">def</span> <span class="nf">fixie_envvar_names</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;Returns the fixie environment variable names as a set of str.&quot;&quot;&quot;</span>
+    <span class="n">names</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">ENVVARS</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+    <span class="k">return</span> <span class="n">names</span></div>
+
+
+<div class="viewcode-block" id="fixie_detype_env"><a class="viewcode-back" href="../../api/fixie-environ.html#fixie.environ.fixie_detype_env">[docs]</a><span class="k">def</span> <span class="nf">fixie_detype_env</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;Returns a detyped version of the environment containing only the fixie</span>
+<span class="sd">    environment variables.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">keep</span> <span class="o">=</span> <span class="n">fixie_envvar_names</span><span class="p">()</span>
+    <span class="n">denv</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">ENV</span><span class="o">.</span><span class="n">detype</span><span class="p">()</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">keep</span><span class="p">}</span>
+    <span class="k">return</span> <span class="n">denv</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+        <p class="logo"><a href="../../index.html" title="index">
+          <img class="logo" src="../../_static/fixie-logo.png" alt="Logo"/>
+        </a></p>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+    
+    
+        <div class="sidebar-toggle-group no-js">
+            
+            <button class="sidebar-toggle" id="sidebar-hide" title="Hide the sidebar menu">
+                 «
+                <span class="show-for-small">hide menu</span>
+                
+            </button>
+            <button class="sidebar-toggle" id="sidebar-show" title="Show the sidebar menu">
+                
+                <span class="show-for-small">menu</span>
+                <span class="hide-for-small">sidebar</span>
+                 »
+            </button>
+        </div>
+    
+      <div class="clearer"></div>
+    </div>
+    <div class="relbar-bottom">
+        
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> &nbsp; &nbsp;</li>
+    <li><a href="../../index.html">fixie  documentation</a> &#187;</li>
+
+          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &#187;</li> 
+      </ul>
+    </div>
+    </div>
+
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2018, Anthony Scopatz.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.6.
+    </div>
+    <!-- cloud_sptheme 1.4 -->
+  </body>
+</html>
